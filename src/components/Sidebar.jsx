@@ -148,7 +148,7 @@ const Sidebar = () => {
                             </div>
 
                             {/* Faculty Management */}
-                            <Link>
+                            <Link to="/faculty-management">
                                 <li className='list'>
                                     <div className="list-items">
                                         <BadgeRoundedIcon className='icons' style={{ fontSize: '20px' }} />

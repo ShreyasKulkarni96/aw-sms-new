@@ -238,16 +238,8 @@ body {
 
 /* ------------------------------------------ACADEMIC YEAR WRAPPER------------------------------------- */
 
-.main-page {
-  @apply flex h-screen
-}
-
-.main-page-content {
-  @apply flex-1 flex-col overflow-hidden
-}
-
 .main-div {
-  @apply overflow-x-hidden m-10
+  @apply overflow-x-hidden m-10 overflow-y-hidden
 }
 
 .ay-main-content {
@@ -272,11 +264,27 @@ body {
 
 /* ----------------------------------------------COMMON PAGE STYLES------------------------------------------ */
 
-.card-container {
-  @apply col-span-12 mb-8
+.main-page {
+  @apply flex h-screen
 }
 
-.card {
+.main-page-content {
+  @apply flex-1 flex-col h-screen overflow-hidden
+}
+
+.main {
+  @apply h-full
+}
+
+.main-grid {
+  @apply grid
+}
+
+.page-content {
+  @apply h-full m-2 p-6
+}
+
+.top-card {
   @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white
 }
 
@@ -284,35 +292,38 @@ body {
   @apply flex justify-between
 }
 
+.card-header {
+  @apply text-xl font-bold text-gray-600 mb-2
+}
+
 .bottom-card {
   @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
 }
 
-.card-header {
-  @apply text-xl font-bold text-gray-600
+/* -----------------------TABLE CSS------------------------ */
+.table {
+  @apply min-w-full border
 }
 
-.table {
-  @apply table-auto w-full border overflow-y-auto mt-4
+.table-head {
+  @apply sticky border top-0 text-left bg-orange-600 p-2 text-base font-semibold
 }
 
 .th {
   @apply border text-left bg-orange-600 p-2 text-base font-semibold
 }
 
-.table-body {
-  @apply overflow-y-auto
-}
-
 .td {
   @apply border p-2 text-base
 }
+
+/* -------------------PAGINATION WRAPPER------------------- */
 
 .pagination-wrapper {
   @apply flex mt-4 pb-10
 }
 
-.previous-button {
+.pagination-button {
   @apply mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg
 }
 
@@ -320,9 +331,7 @@ body {
   @apply m-3 font-bold
 }
 
-.back-button {
-  @apply mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg
-}
+/* ----------------INPUT, SELECT------------------ */
 
 .form-input {
   @apply block text-base font-medium
@@ -334,4 +343,8 @@ body {
 
 .form-date-select {
   @apply w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400
+}
+
+.form-diabled {
+  @apply form-select bg-gray-200
 }
