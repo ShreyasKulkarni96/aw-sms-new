@@ -122,10 +122,15 @@ const ProgramManagement = () => {
                 </div>
                 <div className='main-page-content'>
                     <TopHeader />
-                    <main className='main-div'>
-                        <div className='grid'>
-                            <div className='card-container'>
-                                <div className='card'>
+                    <main className='main'>
+                        <div className='main-grid'>
+                            <div className='page-content'>
+
+                                {/* TOP CARD  */}
+                                <div className='top-card'>
+                                    <div className='card-content'>
+                                    <div className='card-header'>Programs</div>
+                                    </div>
                                     <div className='card-content'>
                                         <div className='mt-2'>
                                             <label class="inline-flex items-center mr-6">
@@ -149,9 +154,11 @@ const ProgramManagement = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className='bottom-card overflow-auto'>
+
+                                {/* BOTTOM CARD  */}
+                                <div className='bottom-card h-[450px]'>
                                     <div className='card-header'>Program Lists</div>
-                                    <div className='max-h-3/5 overflow-y-auto'>
+                                    <div className='overflow-auto' style={{ maxHeight: '350px' }}>
                                         <table id='programList' className='table max-h-3/5'>
                                             <thead className='sticky top-0 left-0'>
                                                 {headerGroups.map(headerGroup => (
@@ -164,7 +171,7 @@ const ProgramManagement = () => {
                                                     </tr>
                                                 ))}
                                             </thead>
-                                            <tbody className="table-body" {...getTableBodyProps()}>
+                                            <tbody {...getTableBodyProps()}>
                                                 {page.map((row) => {
                                                     prepareRow(row);
                                                     return (
@@ -185,13 +192,13 @@ const ProgramManagement = () => {
                                 </div>
 
                                 {/*-------------PAGINATION------------*/}
-                                <div className='pagination-wrapper'>
-                                    <button className='previous-button'>
+                                <div className='flex mt-4'>
+                                    <button onClick={() => previousPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
                                         Previous
                                     </button>
-                                    <span className='span-pagination'>1</span>
-                                    <button className='back-button'>
-                                        back
+                                    <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
+                                    <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                        Next
                                     </button>
                                 </div>
 

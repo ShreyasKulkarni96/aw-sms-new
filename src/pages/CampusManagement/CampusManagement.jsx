@@ -114,39 +114,41 @@ const CampusManagement = () => {
 
     return (
         <>
-            <div className="main-page">
+            <div className='main-page'>
                 <div>
                     <Sidebar />
                 </div>
-                {/* Main Content */}
                 <div className="main-page-content">
-                    {/* Header */}
                     <TopHeader />
-
-                    {/* Main Content Area */}
-                    <main className="main-div">
+                    <main className='main'>
                         <div className='grid'>
-                            <div className='col-span-12 mb-8'>
-                                <div className='w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white'>
-                                    <div className='flex justify-between'>
-                                        <div></div>
+                            <div className='page-content'>
+                                {/* TOP CARD */}
+                                <div className='top-card '>
+                                    <div className='card-content'>
+                                        <div className='card-header'>Add Campus</div>
                                         <div>
-                                            <Link to='/add-campus'>
-                                                <Button style="small">Add Campus</Button>
+                                            <Link to="/add-campus">
+                                                <Button 
+                                                  className="btn btn-primary"
+                                                  type="button"
+                                                  data-mdb-toggle="collapse"
+                                                  href="#collapseWithScrollbar"
+                                                  aria-expanded="false"
+                                                  aria-controls="collapseExample"
+                                                  style='small'>Add Campus
+                                                </Button>
                                             </Link>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            {/* CAMPUS LISTS */}
-                            <div className='col-span-12 mb-4'>
-                                <div className='w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white'>
-                                    <h4 className='text-xl font-bold text-gray-600'>
-                                        Campus Lists
-                                    </h4>
-                                    <div className='mt-4'>
-                                        <table className='table-auto w-full border overflow-y-auto'>
-                                            <thead>
+                                
+                                {/* CAMPUS LISTS */}
+                                <div className='bottom-card h-[650px] '>
+                                    <div className='card-header '>Campus Lists </div>
+                                    <div className='overflow-auto' style={{ maxHeight: '350px' }}>
+                                        <table id="studentList" className="table">
+                                            <thead className='table-head'>
                                                 {headerGroups.map(headerGroup => (
                                                     <tr {...headerGroup.getHeaderGroupProps()}>
                                                         {headerGroup.headers.map(column => (
@@ -157,7 +159,7 @@ const CampusManagement = () => {
                                                     </tr>
                                                 ))}
                                             </thead>
-                                            <tbody className="overflow-y-auto"  {...getTableBodyProps()}>
+                                            <tbody {...getTableBodyProps()}>
                                                 {page.map(row => {
                                                     prepareRow(row);
                                                     return (
@@ -178,16 +180,17 @@ const CampusManagement = () => {
                                         </table>
                                     </div>
                                 </div>
-                            </div>
-                            {/* ------------PAGINATION-------------- */}
-                            <div className='flex justify-center pb-10'>
-                                <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                    Previous
-                                </button>
-                                <span className='m-3 font-bold'>1</span>
-                                <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                    back
-                                </button>
+                                
+                                {/* ------Pagination------ */}
+                                <div className='flex mt-4'>
+                                    <button onClick={() => previousPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                        Previous
+                                    </button>
+                                    <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
+                                    <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                        Next
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </main>

@@ -230,11 +230,11 @@ const StudentManagement = () => {
 
                                 {/* -----------------------PAGINATIOn----------------------------- */}
                                 <div className='flex mt-4'>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                    <button onClick={() => previousPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
                                         Previous
                                     </button>
-                                    <span className='m-3 font-bold'>Page </span>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                    <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
+                                    <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
                                         back
                                     </button>
                                 </div>
