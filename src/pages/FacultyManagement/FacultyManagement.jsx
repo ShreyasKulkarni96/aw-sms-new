@@ -64,7 +64,8 @@ const FacultyManagement = () => {
                     <main className='main'>
                         <div className='main-grid'>
                             <div className='page-content'>
-                                {/* ----------------------TOP CARD------------------ */}
+
+                                {/* TOP CARD */}
                                 <div className='top-card'>
                                     <div className='card-content'>
                                         <div className='card-header'>Faculty Management</div>
@@ -102,19 +103,16 @@ const FacultyManagement = () => {
                                                 </select>
                                             </div>
                                         </div>
-                                        <div className="w-full">
-
-                                        </div>
-                                        <div className="w-full mt-6 text-right">
+                                        <div className="w-full mt-6 text-center">
                                             <Button style="small">Add New Faculty</Button>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* ----------------BOTTOM CARD------------------- */}
-                                <div className='bottom-card h-[600px]'>
+                                <div className='bottom-card h-[450px]'>
                                     <div className='card-header '>List of Faculty</div>
-                                    <div className='overflow-auto' style={{ maxHeight: '550px' }}>
+                                    <div className='overflow-auto' style={{ maxHeight: '350px' }}>
                                         <table id="studentList" className="table">
                                             <thead className='table-head'>
                                                 {headerGroups.map(headerGroup => (
@@ -145,16 +143,17 @@ const FacultyManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* ------Pagination------ */}
+                                {/* PAGINATION  */}
                                 <div className='flex mt-4'>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                    <button onClick={() => previousPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
                                         Previous
                                     </button>
-                                    <span className='m-3 font-bold'>Page </span>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                        back
+                                    <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
+                                    <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                        Next
                                     </button>
                                 </div>
+                                
                             </div>
                         </div>
                     </main>

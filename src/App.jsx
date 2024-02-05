@@ -13,6 +13,9 @@ import StudentManagement from "./pages/StudentManagement/StudentManagement";
 import BatchManagement from "./pages/BatchManagement";
 import FacultyManagement from "./pages/FacultyManagement/FacultyManagement";
 import AddStudent from "./pages/StudentManagement/AddStudent";
+import CourseManagement from "./pages/ProgramManagement/CourseManagement";
+import SessionManagement from "./pages/ProgramManagement/SessionManagement";
+import TopicManagement from "./pages/ProgramManagement/TopicManagement";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +59,18 @@ const router = createBrowserRouter([
   {
     path: '/program-management',
     element: <ProgramManagement />
+  },
+  {
+    path: '/course-management',
+    element: <CourseManagement />
+  },
+  {
+    path: '/session-management',
+    element: <SessionManagement />
+  },
+  {
+    path: '/topic-management',
+    element: <TopicManagement />
   },
   {
     path: '/account-management',

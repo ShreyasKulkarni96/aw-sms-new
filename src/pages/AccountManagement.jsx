@@ -224,6 +224,7 @@ const AccountManagement = () => {
                     <main className='main'>
                         <div className='main-grid'>
                             <div className='page-content'>
+                                {/* --------------TOP CARD--------------- */}                                
                                 <div className='top-card'>
                                     <div className='card-content'>
                                         <div className='card-header'>Create Invoice</div>
@@ -419,7 +420,7 @@ const AccountManagement = () => {
                                     </button>
                                     <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
                                     <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                        back
+                                        Next
                                     </button>
                                 </div>
 
