@@ -7,4 +7,5 @@ export const CREATE_INVOICES = '';
 
 export const GET_BATCH_DATA = '/scheduleData/event';
 
+// STUDENT_MANAGEMENT_API'S
 export const STUDENT_DETAILS = '/student-details';

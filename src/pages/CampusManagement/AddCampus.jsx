@@ -6,7 +6,6 @@ import Button from '../../components/Button';
 import cities from '../../constants/cities.json';
 import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import { space } from 'postcss/lib/list';
 import { toast } from 'react-toastify';
 import APIService from '../../services/APIService';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';

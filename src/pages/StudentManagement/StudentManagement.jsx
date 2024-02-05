@@ -195,7 +195,7 @@ const StudentManagement = () => {
                                 </div>
 
                                 {/* ----------------BOTTOM CARD------------------- */}
-                                <div className='bottom-card h-[500px]'>
+                                <div className='bottom-card h-[520px]'>
                                     <div className='card-header '>List of Students</div>
                                     <div className='overflow-auto' style={{ maxHeight: '350px' }}>
                                         <table id="studentList" className="table">
@@ -229,13 +229,13 @@ const StudentManagement = () => {
                                 </div>
 
                                 {/* -----------------------PAGINATIOn----------------------------- */}
-                                <div className='flex mt-4'>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                <div className='pagination-wrapper'>
+                                    <button className='pagination-button'>
                                         Previous
                                     </button>
-                                    <span className='m-3 font-bold'>Page </span>
-                                    <button className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                        back
+                                    <span className='span-pagination'>Page </span>
+                                    <button className='pagination-button'>
+                                        Next
                                     </button>
                                 </div>
                             </div>

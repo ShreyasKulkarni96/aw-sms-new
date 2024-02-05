@@ -239,7 +239,7 @@ const AccountManagement = () => {
                                                     type="text"
                                                     name="invoiceNo"
                                                     id="invoiceNo"
-                                                    className="form-diabled"
+                                                    className="form-disabled"
                                                     placeholder="IN-XXXXXXXXXXXX"
                                                 />
                                             </div>
@@ -334,7 +334,7 @@ const AccountManagement = () => {
                                                     type="text"
                                                     id="payableAmount"
                                                     name="payableAmount"
-                                                    className="form-diabled"
+                                                    className="form-disabled"
                                                 />
                                             </div>
                                         </div>
@@ -363,7 +363,7 @@ const AccountManagement = () => {
                                                     type="text"
                                                     id="balanceAmount"
                                                     name="balanceAmount"
-                                                    className="form-diabled"
+                                                    className="form-disabled"
                                                     value={formData.balanceAmount || balanceAmount}
                                                 />
                                             </div>
