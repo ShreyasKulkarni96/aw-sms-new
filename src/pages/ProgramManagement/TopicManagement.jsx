@@ -495,7 +495,7 @@ const TopicManagement = () => {
                             <div className="modal-title-content">
                                 <div className="modal-title-wrapper">
                                     <h3 className="modal-title">Add Core Topics</h3>
-                                    <button className="edit-cancel-button">
+                                    <button onClick={clearFormData} className="edit-cancel-button">
                                         <svg
                                             className="w-6 h-6"
                                             fill="none"
@@ -603,8 +603,8 @@ const TopicManagement = () => {
                             </div>
                             <div className="light-divider"></div>
                             <div className='modal-button'>
-                                <Button style="small">Save</Button>
-                                <Button style="cancel">Cancel</Button>
+                                <Button style="small" onClick={() => onSubmit('core')}>Save</Button>
+                                <Button style="cancel" onClick={clearFormData}>Cancel</Button>
                             </div>
                         </div>
                     </div>
@@ -620,7 +620,7 @@ const TopicManagement = () => {
                             <div className="modal-title-content">
                                 <div className="modal-title-wrapper">
                                     <h3 className="modal-title">Add Elective Topics</h3>
-                                    <button className="edit-cancel-button">
+                                    <button onClick={clearFormData} className="edit-cancel-button">
                                         <svg
                                             className="w-6 h-6"
                                             fill="none"
@@ -638,7 +638,7 @@ const TopicManagement = () => {
                             <div className="modal-section">
                                 <div className='card-content mt-3'>
                                     <div className="w-full">
-                                        <label className="form-input" htmlFor="selectCourse">
+                                        <label className="form-input" onChange={onMutate} htmlFor="selectCourse">
                                             Select Course<sup className="important">*</sup>
                                         </label>
                                         <input
