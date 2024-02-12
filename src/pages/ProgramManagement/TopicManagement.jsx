@@ -641,13 +641,18 @@ const TopicManagement = () => {
                                         <label className="form-input" onChange={onMutate} htmlFor="selectCourse">
                                             Select Course<sup className="important">*</sup>
                                         </label>
-                                        <input
-                                            type="text"
-                                            id="selectCourse"
-                                            name="selectCourse"
-                                            className="form-select"
-                                            placeholder='Select Course'
-                                        />
+                                        <select className="form-select" onChange={onMutate} id="courseId">
+                                            <option value={0}>---Select Course---</option>
+                                            {courses
+                                                .filter(item => item.type === 'elective')
+                                                .map(course => {
+                                                    return (
+                                                        <option key={course.id} value={course.id}>
+                                                            {course.courseName}
+                                                        </option>
+                                                    );
+                                                })}
+                                        </select>
                                     </div>
                                 </div>
                                 <div className='card-content mt-3'>
@@ -661,6 +666,8 @@ const TopicManagement = () => {
                                             name="topicCode"
                                             className="form-disabled"
                                             placeholder='Topic Code'
+                                            value={formData.electiveTopicCode}
+                                            readOnly
                                         />
                                     </div>
                                 </div>
@@ -675,6 +682,8 @@ const TopicManagement = () => {
                                             name="topicName"
                                             className="form-select"
                                             placeholder='Topic Name'
+                                            value={topicName}
+                                            onChange={onMutate}
                                         />
                                     </div>
                                 </div>
@@ -689,28 +698,37 @@ const TopicManagement = () => {
                                             name="description"
                                             className="form-select"
                                             placeholder='Description'
+                                            value={description}
+                                            onChange={onMutate}
                                         />
                                     </div>
                                 </div>
                                 <div className='card-content mt-3'>
                                     <div className="w-full">
-                                        <label className="form-input" htmlFor="session">
+                                        <label className="form-input" htmlFor="sessionIds">
                                             Session<sup className="important">*</sup>
                                         </label>
-                                        <input
-                                            type="text"
-                                            id="session"
-                                            name="session"
+                                        <select
                                             className="form-select"
-                                            placeholder='Session'
-                                        />
+                                            multiple
+                                            onChange={onMutate}
+                                            id="sessionIds"
+                                        >
+                                            {sessions.map(session => {
+                                                return (
+                                                    <option key={session.id} value={session.id}>
+                                                        {session.sessionName}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                             <div className="light-divider"></div>
                             <div className='modal-button'>
-                                <Button style="small">Save</Button>
-                                <Button style="cancel">Cancel</Button>
+                                <Button style="small" onClick={clearFormData}>Save</Button>
+                                <Button style="cancel" onClick={() => onSubmit('elective')}>Cancel</Button>
                             </div>
                         </div>
                     </div>
