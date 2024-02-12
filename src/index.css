@@ -284,6 +284,18 @@ body {
   @apply h-full m-2 p-6
 }
 
+.card-1 {
+  @apply w-[250px] h-[200px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
+}
+
+.card-2 {
+  @apply w-[1080px] h-[450px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
+}
+
+.card-3 {
+  @apply w-[550px] h-[325px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
+}
+
 .top-card {
   @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white
 }
@@ -294,6 +306,10 @@ body {
 
 .card-header {
   @apply text-xl font-bold text-gray-600 mb-2
+}
+
+.card-title {
+  @apply text-3xl font-bold text-gray-600 mb-2
 }
 
 .bottom-card {
@@ -335,6 +351,9 @@ body {
 
 .form-input {
   @apply block text-base font-medium
+}
+.day-select {
+  @apply w-[200px] text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400
 }
 
 .form-select {

@@ -177,7 +177,7 @@ const Sidebar = () => {
                                 </li>
                             </Link>
 
-                            <Link>
+                            <Link to='/leave-management'>
                                 <li className='list'>
                                     <div className="list-items">
                                         <ThreePRoundedIcon className='icons' style={{ fontSize: '20px' }} />

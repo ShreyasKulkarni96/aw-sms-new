@@ -6,6 +6,7 @@ import APIService from '../../services/APIService';
 
 import { useTable, useSortBy, usePagination } from 'react-table';
 import DeleteModal from '../../components/shared/DeleteModal';
+// import { Link } from 'react-router-dom';
 
 const CourseManagement = () => {
     const [courses, setCourses] = useState([]);

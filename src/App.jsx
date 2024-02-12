@@ -16,6 +16,7 @@ import AddStudent from "./pages/StudentManagement/AddStudent";
 import CourseManagement from "./pages/ProgramManagement/CourseManagement";
 import SessionManagement from "./pages/ProgramManagement/SessionManagement";
 import TopicManagement from "./pages/ProgramManagement/TopicManagement";
+import LeaveManagement from "./pages/LeaveManagement";
 
 const router = createBrowserRouter([
   {
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
   {
     path: '/academicyear-management',
     element: <AcademicYearManagement />
+  },
+  {
+    path: '/leave-management',
+    element: <LeaveManagement />
   }
 ])
 
