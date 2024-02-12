@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import Button from '../../components/Button';
 import Sidebar from '../../components/Sidebar';
 import TopHeader from '../../components/TopHeader';
@@ -11,26 +12,73 @@ import { toast } from 'react-toastify';
 import DeleteModal from '../../components/shared/DeleteModal';
 
 const TopicManagement = () => {
+    const params = useParams();
     const [topics, setTopics] = useState([]);
+    const [topicId, setTopicId] = useState();
+    const [courses, setCourses] = useState([]);
+    const [sessions, setSessions] = useState([]);
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [openSection, setOpenSection] = useState(null);
-    const [editData, setEditData] = useState({});
+    const [formData, setFormData] = useState({
+        courseId: 0,
+        coreTopicCode: 'CRS/****/****/V1.0',
+        electiveTopicCode: 'CRS/****/****/V1.0',
+        topicName: '',
+        type: '',
+        description: '',
+        sessionIds: []
+    });
+
+    const { topicName, description } = formData;
+    const topicNameRegex = /^[A-Za-z0-9\s\-.]+$/;
 
     const handleSectionToggle = (section) => {
         setOpenSection(openSection === section ? null : section);
     };
 
     useEffect(() => {
+        fetchCourses();
         fetchTopics();
     }, []);
 
 
     const fetchTopics = async () => {
         try {
-            const { data } = await APIService.get(TOPICS);
+            const sessionId = params.sessionId;
+            let url = sessionId ? `/topic?sessionId=${sessionId}` : '/topic';
+            const { data } = await APIService.get(url);
             setTopics(data.data);
+            // setIsLoading(false);
         } catch (error) {
+            console.log(error);
+            // setIsLoading(false);
             toast.error('Some Error occurred while fetching topics');
+        }
+    };
+
+    const fetchCourses = async () => {
+        try {
+            const url = `/course?fields=courseName,id,type`;
+            const { data } = await APIService.get(url);
+            setCourses(data.data);
+            // setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+            // setIsLoading(false);
+            toast.error('Error fetching courses');
+        }
+    };
+
+    const fetchSession = async courseId => {
+        try {
+            let url = courseId ? `/session?courseId=${courseId}` : '/session';
+            const { data } = await APIService.get(url);
+            setSessions(data.data);
+            // setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+            // setIsLoading(false);
+            toast.error('Some Error occurred while fetching session');
         }
     };
 
@@ -97,14 +145,118 @@ const TopicManagement = () => {
         setDeleteModalOpen(false);
     }
 
-    const handleEdit = (data) => {
-        handleSectionToggle('editTopic');
-        setEditData(data);
-    }
+    const onMutate = async e => {
+        if (e.target.id === 'courseId') {
+            await fetchSession(e.target.value * 1);
+            setFormData(prevState => ({ ...prevState, [e.target.id]: e.target.value * 1 }));
+            return false;
+        }
 
-    const handleCancelEdit = () => {
-        handleSectionToggle(null);
-    }
+        var selectedValues = [];
+        if (e.target.id === 'sessionIds') {
+            var options = e.target.options;
+            for (var i = 0, l = options.length; i < l; i++) {
+                if (options[i].selected) {
+                    selectedValues.push(options[i].value * 1);
+                }
+            }
+            setFormData(prevState => ({ ...prevState, [e.target.id]: selectedValues }));
+            return false;
+        }
+
+        setFormData(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
+    };
+
+    const onSubmit = async topicType => {
+        // 1.) Add validations on data
+        formData.type = topicType;
+        // for (const key in formData) {
+        //   if (!formData[key]) return toast.warn(`Please add ${key.split(/(?=[A-Z])/).join(' ')}`);
+        // }
+
+        if (!formData.courseId) {
+            // Display a validation warning message if it's empty
+            toast.warn('Please select a Course');
+            return;
+        }
+        // Validate that the sessionName is not empty and matches the pattern
+        if (!formData.topicName) {
+            // Display a validation warning message if it's empty
+            toast.warn('Topic Name cannot be empty');
+            return;
+        }
+
+        // check if the topicName is valid
+        if (!topicNameRegex.test(formData.topicName)) {
+            toast.warn('Topic Name is invalid');
+            return;
+        }
+
+        // Validate that the sessionName is not empty and matches the pattern
+        if (!formData.description) {
+            // Display a validation warning message if it's empty
+            toast.warn('Description cannot be empty');
+            return;
+        }
+
+        // check if the topicName is valid
+        if (!topicNameRegex.test(formData.description)) {
+            toast.warn('Description is invalid');
+            return;
+        }
+
+        if (formData.sessionIds.length === 0) {
+            // Display a validation warning message if no sessions are selected
+            toast.warn('Please select at least one Session');
+            return;
+        }
+
+        // 2.) Hit the API;
+        const newTopic = await addTopic(formData);
+
+        //3.) Add to Course List
+        if (newTopic) {
+            newTopic.program = topics.find(el => el.id === newTopic.topicId);
+            setTopics([...topics, newTopic]);
+        }
+        clearFormData();
+    };
+
+
+    const addTopic = async formData => {
+        try {
+            const payload = { ...formData };
+            delete payload.coreTopicCode;
+            delete payload.electiveTopicCode;
+            payload.topicCode = formData.type === 'core' ? formData.coreTopicCode : formData.electiveTopicCode;
+            const { data } = await APIService.post(`/topic`, payload);
+            if (data.code === 201) toast.success('Topic Added Successfully');
+            // setIsLoading(false);
+            return data.data;
+        } catch (error) {
+            console.log(error);
+            if (error.response && error.response.data) {
+                toast.error(error.response.data?.message || 'Something Went Wrong');
+                return false;
+            }
+            // setIsLoading(false);
+            toast.error('Temporarily Unable to Add Session');
+            return false;
+        }
+    };
+
+    const clearFormData = () => {
+        const clearedForm = {};
+        for (const key in formData) {
+            if (key.toLowerCase().includes('code')) {
+                clearedForm[key] = formData[key];
+                continue;
+            }
+            clearedForm[key] = '';
+        }
+        setFormData(clearedForm);
+        setOpenSection(null)
+    };
 
     return (
         <>
@@ -265,7 +417,7 @@ const TopicManagement = () => {
                 </div>
             </div>
 
-            {/* ----------------------------------EDIT TOPIC MODAL------------------------------- */}
+            {/* ----------------------------------EDIT TOPIC MODAL-------------------------------
             {openSection === "editTopic" &&
                 <div className='modal-open'>
                     <div className="modal-wrapper">
@@ -330,7 +482,7 @@ const TopicManagement = () => {
                             </div>
                         </div>
                     </div>
-                </div>}
+                </div>} */}
 
             {/* ----------------------------------ADD CORE / ELECTIVE TOPIC MODAL----------------------------------- */}
             {openSection === 'core' &&
@@ -387,7 +539,7 @@ const TopicManagement = () => {
                                             type="text"
                                             id="coreTopicCode"
                                             name="coreTopicCode"
-                                            className="form-select"
+                                            className="form-disabled"
                                             placeholder='Topic Code'
                                             value={formData.coreTopicCode}
                                             readOnly
@@ -507,7 +659,7 @@ const TopicManagement = () => {
                                             type="text"
                                             id="topicCode"
                                             name="topicCode"
-                                            className="form-select"
+                                            className="form-disabled"
                                             placeholder='Topic Code'
                                         />
                                     </div>

@@ -18,7 +18,6 @@ import { PROGRAMS } from '../../constants/api';
 
 const ProgramManagement = () => {
     const [filterOn, setFilterOn] = useState(true);
-    const [editData, setEditData] = useState({});
     const [programs, setPrograms] = useState([]);
     const [programId, setProgramId] = useState(null);
     const [openSection, setOpenSection] = useState(null);
@@ -126,7 +125,6 @@ const ProgramManagement = () => {
 
     const clearFormData = () => {
         setOpenSection(null);
-        setEditData({});
         const clearedForm = {};
         for (const key in formData) {
             if (key.toLowerCase().includes('code')) {
@@ -148,7 +146,7 @@ const ProgramManagement = () => {
             accessor: 'action',
             Cell: ({ row }) => (
                 <>
-                    <button onClick={() => handleEdit(row.original)}>
+                    <button>
                         <BorderColorRoundedIcon className='icon-style mr-2' />
                     </button>
                     <button onClick={() => handleDeleteConfirmation(row.original.id)}>
@@ -209,82 +207,15 @@ const ProgramManagement = () => {
     }
 
     const handleCancelDelete = () => {
+        setFormData({
+            coreProgramCode: '***/CR/V1.0',
+            electiveProgramCode: '***/EL/V1.0',
+            programName: '',
+            type: '',
+            details: ''
+        });
         setDeleteModalOpen(false);
     }
-
-    const handleEdit = (data) => {
-        setEditData(data);
-        setOpenSection('editProgram');
-    }
-
-    const handleProgramUpdate = async updatedData => {
-        // 1.) Validations
-        const formData = {
-            programId: updatedData[0],
-            programCode: updatedData[1],
-            programName: updatedData[2],
-            type: updatedData[3],
-            details: updatedData[4]
-        };
-
-        // Define the programName pattern
-
-        // Validate that the topicName is not empty and matches the pattern
-        if (!formData.programName) {
-            // Display a validation warning message if it's empty
-            toast.warn('Program Name cannot be empty');
-            return;
-        }
-
-        // check if the programName is valid
-        if (!programNameRegex.test(formData.programName)) {
-            // Display a validation warning message if it doesn't match the pattern
-            toast.warn('Program Name is invalid');
-            return;
-        }
-
-        // Validate that the Details is not empty and matches the pattern
-        if (!formData.details) {
-            // Display a validation warning message if it's empty
-            toast.warn('Details  cannot be empty');
-            return;
-        }
-
-        // check if the Details is valid
-        if (!programNameRegex.test(formData.details)) {
-            // Display a validation warning message if it doesn't match the pattern
-            toast.warn('Details  is invalid');
-            return;
-        }
-
-        // 2.) Call Update API
-        const updateResult = await updateProgram(formData);
-
-        // 3.) Refresh the Program List
-        if ((updateResult.status = 'success')) {
-            await fetchPrograms();
-            fetchPrograms();
-        }
-    };
-
-    const updateProgram = async formData => {
-        try {
-            const payload = { ...formData };
-            delete payload.programId;
-            delete payload.programCode;
-
-            const { data } = await APIService.patch(`${PROGRAMS}/${formData.programId}`, payload);
-            if (data.code === 200) toast.success('Program Updated Successfully');
-            clearFormData();
-            return data;
-        } catch (error) {
-
-            if (error.response && error.response.data) {
-                return toast.error(error.response.data?.message || 'Something Went Wrong');
-            }
-            toast.error('Temporarily Unable to Update Program');
-        }
-    };
 
     const filterPrograms = async e => {
         if (e.target.value !== 'ALL') setFilterOn(false);
@@ -335,7 +266,7 @@ const ProgramManagement = () => {
                                                 />
                                                 <label className="filter-name" htmlFor="flexRadioDefault1">Elective</label>
                                             </label>
-                                            <label class="filter-label">
+                                            <label className="filter-label">
                                                 <input
                                                     type="radio"
                                                     name="flexRadioDefault"
@@ -344,7 +275,7 @@ const ProgramManagement = () => {
                                                     onChange={filterPrograms}
                                                     checked={filterOn}
                                                 />
-                                                <label class="filter-name" htmlFor="flexRadioDefault1">All</label>
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">All</label>
                                             </label>
                                         </div>
                                         <div>
@@ -578,7 +509,7 @@ const ProgramManagement = () => {
             }
 
             {/* --------------------------------EDIT PROGRAM----------------------------- */}
-            {openSection === 'editProgram' &&
+            {/* {openSection === 'editProgram' &&
                 <div className='modal-open'>
                     <div className="modal-wrapper">
                         <div className="modal-opacity">
@@ -615,7 +546,7 @@ const ProgramManagement = () => {
                                             name="code"
                                             className="form-disabled"
                                             placeholder='Program Code'
-                                            value={editData.programCode}
+                                            value={formData.coreProgramCode}
                                             readOnly
                                         />
                                     </div>
@@ -631,7 +562,8 @@ const ProgramManagement = () => {
                                             name="programName"
                                             className="form-select"
                                             placeholder='Program Name'
-                                            value={editData.programName}
+                                            value={formData.programName}
+                                            onChange={(e) => setFormData({ ...formData, programName: e.target.value })}
                                         />
                                     </div>
                                 </div>
@@ -646,7 +578,8 @@ const ProgramManagement = () => {
                                             name="type"
                                             className="form-select"
                                             placeholder='Type'
-                                            value={editData.type}
+                                            value={formData.type}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                         />
                                     </div>
                                 </div>
@@ -661,7 +594,8 @@ const ProgramManagement = () => {
                                             name="details"
                                             className="form-select"
                                             placeholder='Details'
-                                            value={editData.details}
+                                            value={formData.details}
+                                            onChange={(e) => setFormData({ ...formData, details: e.target.value })}
                                         />
                                     </div>
                                 </div>
@@ -674,7 +608,7 @@ const ProgramManagement = () => {
                         </div>
                     </div>
                 </div>
-            }
+            } */}
             <DeleteModal isOpen={isDeleteModalOpen} onCancel={handleCancelDelete} onConfirm={handleDelete} />
         </>
     )

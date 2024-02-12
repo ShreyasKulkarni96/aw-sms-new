@@ -1,56 +1,92 @@
-import React, { useState, useEffect, useMemo} from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+
 import Button from '../../components/Button';
 import Sidebar from '../../components/Sidebar';
 import TopHeader from '../../components/TopHeader';
+
 import APIService from '../../services/APIService';
 
+import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import DeleteModal from '../../components/shared/DeleteModal';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import AudioFileRoundedIcon from '@mui/icons-material/AudioFileRounded';
+import BorderColorRoundedIcon from '@mui/icons-material/BorderColorRounded';
 
 const SessionManagement = () => {
-    const [sessions, setSessions] = useState([]);
+    const params = useParams();
+    const [filterOn, setFilterOn] = useState(true);
+    const [courses, setCourses] = useState([]);
+    const [session, setSession] = useState([]);
+    const [sessionId, setSessionId] = useState();
+    const [openSection, setOpenSection] = useState(null);
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        courseId: 0,
+        coreSessionCode: 'CRS/****/CR/SES/***/V1.0',
+        electiveSessionCode: 'CRS/****/EL/SES/***/V1.0',
+        sessionName: '',
+        description: '',
+        sequence: '',
+        timeDuration: '',
+        sessionType: ''
+    });
+
+    const sessionNameRegex = /^[A-Za-z0-9\s\-.]+$/;
+    const { sessionName, description, sequence, timeDuration } = formData;
+    const sessionType = ['classroom', 'studio', 'lab', 'field visit'];
+
+    const handleSectionToggle = (section) => {
+        setOpenSection(openSection === section ? null : section);
+    };
 
     useEffect(() => {
-        fetchSessions();
+        // do an API call
+        fetchCourses();
+        fetchSession();
     }, []);
 
-    const fetchSessions = async () => {
+    const fetchCourses = async () => {
         try {
-            const { data } = await APIService.get('/session');
-            setSessions(data.data);
+            const url = `/course?fields=courseName,id,type`;
+            const { data } = await APIService.get(url);
+            setCourses(data.data);
+
         } catch (error) {
             console.log(error);
-            toast.error('Some Error occurred while fetching sessions');
+            toast.error('Error fetching courses');
+        }
+    };
+
+    const fetchSession = async () => {
+        try {
+            const courseId = params.courseId;
+            let url = courseId ? `/session?courseId=${courseId}` : '/session';
+            const { data } = await APIService.get('/session');
+            setSession(data.data);
+            console.log(session)
+        } catch (error) {
+            console.log(error);
+            toast.error('Some Error occurred while fetching session');
         }
     };
 
     const tableHeader = [
-        { Header: '#', accessor: 'id'},
+        { Header: 'Serial.No', accessor: 'id' },
         { Header: 'Session Code', accessor: 'sessionCode' },
         { Header: 'Name', accessor: 'sessionName' },
-        { Header: 'Duration', accessor: 'duration'},
+        { Header: 'Duration', accessor: 'timeDuration' },
         { Header: 'Type', accessor: 'type' },
         {
             Header: 'Action',
             accessor: 'action',
             Cell: ({ row }) => (
                 <>
-                    <EditModal data={[
-                        row.original.id,
-                        row.original.sessionCode,
-                        row.original.sessionName,
-                        row.original.duration,
-                        row.original.type,
-                        row.original.details
-                    ]}
-                        labels={['Program', 'Session Code', 'Name', 'Duration', 'Type', 'Details']}
-                    // onSave={handleProgramUpdate}
-                    />
                     <button>
                         <BorderColorRoundedIcon className='icon-style mr-2' />
                     </button>
-                    <button onClick={() => handleConfirmation(row.original.id)}>
+                    <button onClick={() => handleDeleteConfirmation(row.original.id)}>
                         <DeleteRoundedIcon className='icon-style' />
                     </button>
                 </>
@@ -58,9 +94,9 @@ const SessionManagement = () => {
         },
         {
             Header: 'View Topics',
-            accessor: 'viewTopics',
+            accessor: 'showTopics',
             Cell: ({ row }) => (
-                <Link to={{ pathname: `/session-management/${row.id}` }}>
+                <Link to={{ pathname: `/topic-management/${row.original.id}` }}>
                     <button>
                         <AudioFileRoundedIcon className='text-blue' />
                     </button>
@@ -70,6 +106,7 @@ const SessionManagement = () => {
     ];
 
     const tableColumn = useMemo(() => tableHeader, []);
+
     const {
         headerGroups,
         getTableProps,
@@ -81,27 +118,27 @@ const SessionManagement = () => {
         previousPage,
         nextPage,
         state: { pageIndex }
-    } = useTable({ columns: tableColumn, data: sessions }, useSortBy, usePagination);
+    } = useTable({ columns: tableColumn, data: session }, useSortBy, usePagination);
 
-    const handleConfirmation = (id) => {
-        setProgramId(id);
-        setDeleteModalOpen(true)
+    const handleDeleteConfirmation = (id) => {
+        setSessionId(id);
+        setDeleteModalOpen(true);
     }
-    
+
     const handleDelete = async () => {
         try {
-            if (programId) {
-                await APIService.delete(`/session/${programId}`);
-                await fetchPrograms();
-                setDeleteModalOpen(false);
+            if (sessionId) {
+                await APIService.delete(`/session/${sessionId}`);
+                await fetchSession();
                 toast.success('Session deleted successfully');
             }
-        } catch (error) {
-            const errorMessage = 'Temporarily Unable to delete Session';
-            if (error.response && error.response.data) {
-                return toast.error(errorMessage || error.response.data.message);
+        } catch (err) {
+            console.log(err);
+            const errMsg = 'Temporarily Unable to delete Session';
+            if (err.response && err.response.data) {
+                return toast.error(err.response.data.message || errMsg);
             }
-            toast.error(errorMessage)
+            toast.error(errMsg);
         }
         setDeleteModalOpen(false);
     }
@@ -113,38 +150,164 @@ const SessionManagement = () => {
     const filterSessions = async e => {
         if (e.target.value !== 'ALL' && e.target.name !== 'filterByCourse') setFilterOn(false);
         if (e.target.value === 'ALL') {
-          setFilterOn(true);
-          await fetchSession();
-          return;
+            setFilterOn(true);
+            await fetchSession();
+            return;
         }
         if (e.target.name === 'filterByType') {
-          let filterVal = e.target.value;
-          if (!filterVal) {
-            await fetchCourses();
-            await fetchSession();
+            let filterVal = e.target.value;
+            if (!filterVal) {
+                await fetchCourses();
+                await fetchSession();
+                return;
+            }
+            // filterVal = parseInt(e.target.value);
+            const filteredCourses = courses.filter(item => item.type === filterVal);
+            setCourses(filteredCourses);
+            const filteredSessions = session.filter(item => item.course.type === filterVal);
+            setSession(filteredSessions);
             return;
-          }
-          // filterVal = parseInt(e.target.value);
-          const filteredCourses = courses.filter(item => item.type === filterVal);
-          setCourses(filteredCourses);
-          const filteredSessions = session.filter(item => item.course.type === filterVal);
-          setSession(filteredSessions);
-          return;
         }
         if (e.target.name === 'filterByCourse') {
-          let filterVal = e.target.value;
-          if (!filterVal) {
-            await fetchSession();
+            let filterVal = e.target.value;
+            if (!filterVal) {
+                await fetchSession();
+                return;
+            }
+            filterVal = parseInt(e.target.value);
+            const filteredSessions = session.filter(item => item.courseId === filterVal);
+            setSession(filteredSessions);
             return;
-          }
-          filterVal = parseInt(e.target.value);
-          const filteredSessions = session.filter(item => item.courseId === filterVal);
-          setSession(filteredSessions);
-          return;
         }
         const filteredSessions = session.filter(item => item.type === e.target.value);
         setSession(filteredSessions);
-      };
+    };
+
+    const onMutate = e => {
+        setFormData(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
+    };
+
+    const onSubmit = async sessionType => {
+        // 1.) Add validation
+        formData.type = sessionType;
+
+        // Check  that the Course is not empty
+        if (!formData.courseId) {
+            // Display a validation warning message if it's empty
+            toast.warn('Please select a Course');
+            return;
+        }
+
+        // Validate that the sessionName is not empty and matches the pattern
+        if (!formData.sessionName) {
+            // Display a validation warning message if it's empty
+            toast.warn('Session Name cannot be empty');
+            return;
+        }
+
+        // check if the sessionName is valid
+        if (!sessionNameRegex.test(formData.sessionName)) {
+            // Display a validation warning message if it doesn't match the pattern
+            toast.warn('Session Name is invalid');
+            return;
+        }
+
+        // Validate that the sessionType is not empty and matches the pattern
+        if (!formData.sessionType) {
+            // Display a validation warning message if it's empty
+            toast.warn('Please select a Session Type');
+            return;
+        }
+
+        // Validate that the Sequence is not empty and matches the pattern
+        if (!formData.sequence) {
+            // Display a validation warning message if it's empty
+            toast.warn('Sequence Name cannot be empty');
+            return;
+        }
+
+        // check if the Sequence is valid
+        if (!sessionNameRegex.test(formData.sequence)) {
+            // Display a validation warning message if it doesn't match the pattern
+            toast.warn('Sequence is invalid');
+            return;
+        }
+
+        // Validate that the description is not empty and matches the pattern
+        if (!formData.description) {
+            // Display a validation warning message if it's empty
+            toast.warn('Description cannot be empty');
+            return;
+        }
+
+        // check if the description is valid
+        if (!sessionNameRegex.test(formData.description)) {
+            // Display a validation warning message if it doesn't match the pattern
+            toast.warn('Description is invalid');
+            return;
+        }
+
+        // Validate that the timeDuration is not empty and matches the pattern
+        if (!formData.timeDuration) {
+            // Display a validation warning message if it's empty
+            toast.warn('Time Duration Name cannot be empty');
+            return;
+        }
+
+        // check if the timDuration is valid
+        if (!sessionNameRegex.test(formData.timeDuration)) {
+            // Display a validation warning message if it doesn't match the pattern
+            toast.warn('Time Duration is invalid');
+            return;
+        }
+        // 2.) Hit the API;
+        const newSession = await addSession(formData);
+
+        //3.) Add to Course List
+        if (newSession) {
+            newSession.session = session.find(el => el.id === newSession.sessionId);
+            setSession([...session, newSession]);
+            clearFormData();
+        }
+    };
+
+    const addSession = async formData => {
+        try {
+            const payload = { ...formData };
+            delete payload.coreSessionCode;
+            delete payload.electiveSessionCode;
+            payload.sessionCode = formData.type === 'core' ? formData.coreSessionCode : formData.electiveSessionCode;
+            payload.courseId = formData.courseId * 1;
+
+            const { data } = await APIService.post(`/session`, payload);
+            if (data.code === 201) toast.success('Session Added Successfully');
+            clearFormData()
+            return data.data;
+        } catch (error) {
+            console.log(error);
+            if (error.response && error.response.data) {
+                toast.error(error.response.data?.message || 'Something Went Wrong');
+                return false;
+            }
+            clearFormData()
+            toast.error('Temporarily Unable to Add Session');
+            return false;
+        }
+    };
+
+    const clearFormData = () => {
+        const selectFields = ['courseId', 'sessionType'];
+        const clearedForm = {};
+        for (const key in formData) {
+            if (key.toLowerCase().includes('code') || selectFields.includes(key)) {
+                clearedForm[key] = formData[key];
+                continue;
+            }
+            clearedForm[key] = '';
+        }
+        setFormData(clearedForm);
+        setOpenSection(null)
+    };
 
 
     return (
@@ -158,89 +321,99 @@ const SessionManagement = () => {
                     <main className='main'>
                         <div className='main-grid'>
                             <div className='page-content'>
-
-                                {/* TOP CARD  */}
+                                {/* ------------------------------TOP CARD----------------------------------- */}
                                 <div className='top-card'>
                                     <div className='card-content'>
-                                        <div className='card-header'>Session </div>
+                                        <div className='card-header'>Courses</div>
                                     </div>
                                     <div className='card-content'>
-                                    <div className="w-full">
-                                        <div className="mr-4">
-
-                                            <select
-                                                className='form-select'
-                                                name="courseType"
-                                                id="courseType"
-                                            >
-                                                <option value=''>
-                                                    Select Course Type
-                                                </option>
-                                                <option value=''>
-                                                    Core
-                                                </option>
-                                                <option value=''>
-                                                    Elective
-                                                </option>
+                                        <div className='w-full mr-4'>
+                                            <select className="form-select" name="filterByType" onChange={filterSessions}>
+                                                <option value={''}> Select Course Type</option>
+                                                <option value={'core'}>Core</option>
+                                                <option value={'elective'}>Elective</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div className="w-full">
-                                        <div className="mr-4">
-                                            <select
-                                                className='form-select'
-                                                name="courseName"
-                                                id="courseName"
-                                            >
-                                                <option value=''>
-                                                    Select Course 
-                                                </option>
+                                        <div className='w-full mr-4'>
+                                            <select className="form-select" name="filterByCourse" onChange={filterSessions}>
+                                                <option value={''}>Select Course</option>
+                                                {courses.map(course => {
+                                                    return (
+                                                        <option key={course.id} value={course.id}>
+                                                            {course.courseName}
+                                                        </option>
+                                                    );
+                                                })}
                                             </select>
                                         </div>
+                                        <div className='w-full text-right'>
+                                            <Button style='small' onClick={() => handleSectionToggle('core')}>Core Session</Button>
+                                            <Button style='small' onClick={() => handleSectionToggle('elective')}>Elective Session</Button>
+                                        </div>
                                     </div>
-
-                                    <div className="w-full mt-6 text-center">
-                                        <Button style="small">Core Session</Button>
-                                        <Button style="small">Elective Session</Button>
-                                    </div>
-                                    </div>
-                                    <div className='card-content'>
-                                        <div className='mt-2'>
-                                            <label class="inline-flex items-center mr-6">
-                                                <input type="radio" class="form-radio" name="session" onChange={filterSessions} value="classroom" />
-                                                <span class="ml-2 text-base font-medium">Classroom</span>
+                                    <div className='card-content mt-4'>
+                                        <div>
+                                            <label className="filter-label">
+                                                <input
+                                                    type="radio"
+                                                    name="flexRadioDefault"
+                                                    id="flexRadioDefault1"
+                                                    onChange={filterSessions}
+                                                    value={'Classroom'}
+                                                />
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">Classroom</label>
                                             </label>
-
-                                            <label class="inline-flex items-center mr-6">
-                                                <input type="radio" class="form-radio" name="session" onChange={filterSessions} value="lab" />
-                                                <span class="ml-2 text-base font-medium">Lab</span>
+                                            <label className="filter-label">
+                                                <input
+                                                    type="radio"
+                                                    name="flexRadioDefault"
+                                                    id="flexRadioDefault1"
+                                                    onChange={filterSessions}
+                                                    value={'Lab'}
+                                                />
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">Lab</label>
                                             </label>
-
-                                            <label class="inline-flex items-center mr-6">
-                                                <input type="radio" class="form-radio" name="session" onChange={filterSessions} value="studio" />
-                                                <span class="ml-2 text-base font-medium">Studio</span>
+                                            <label className="filter-label">
+                                                <input
+                                                    type="radio"
+                                                    name="flexRadioDefault"
+                                                    id="flexRadioDefault1"
+                                                    onChange={filterSessions}
+                                                    value={'Studio'}
+                                                />
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">Studio</label>
                                             </label>
-
-                                            <label class="inline-flex items-center mr-6">
-                                                <input type="radio" class="form-radio" name="session" onChange={filterSessions} value="fieldvisit" />
-                                                <span class="ml-2 text-base font-medium">Field Visit</span>
+                                            <label className="filter-label">
+                                                <input
+                                                    type="radio"
+                                                    name="flexRadioDefault"
+                                                    id="flexRadioDefault1"
+                                                    onChange={filterSessions}
+                                                    value={'field_visit'}
+                                                />
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">Field Visit</label>
                                             </label>
-
-                                            <label class="inline-flex items-center mr-6">
-                                                <input type="radio" class="form-radio" name="session" onChange={filterSessions} value="all" />
-                                                <span class="ml-2 text-base font-medium">All</span>
+                                            <label className="filter-label">
+                                                <input
+                                                    type="radio"
+                                                    name="flexRadioDefault"
+                                                    id="flexRadioDefault1"
+                                                    checked={filterOn}
+                                                    value={'ALL'}
+                                                    onChange={filterSessions}
+                                                />
+                                                <label className="filter-name" htmlFor="flexRadioDefault1">All</label>
                                             </label>
-
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* BOTTOM CARD  */}
-                                <div className='bottom-card h-[450px]'>
+                                {/* -----------------------------BOTTOM CARD---------------------------------- */}
+                                <div className='bottom-card h-[580px]'>
                                     <div className='card-header'>Program Lists</div>
-                                    <div className='overflow-auto' style={{ maxHeight: '350px' }}>
-                                        <table id='sessionList' className='table max-h-3/5'>
-                                            <thead className='sticky top-0 left-0'>
+                                    <div className='overflow-auto' style={{ maxHeight: '600px' }}>
+                                        <table id='sessionList' className='table '>
+                                            <thead className='table-head'>
                                                 {headerGroups.map(headerGroup => (
                                                     <tr {...headerGroup.getHeaderGroupProps()}>
                                                         {headerGroup.headers.map(column => (
@@ -271,23 +444,328 @@ const SessionManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* PAGINATION  */}
-                                <div className='flex mt-4'>
-                                    <button onClick={() => previousPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                {/* ------------------------------PAGINATION BUTTONS----------------------------------- */}
+                                <div className='pagination-wrapper'>
+                                    <button className='pagination-button'>
                                         Previous
                                     </button>
-                                    <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
-                                    <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
+                                    <span className='span-pagination'>Page </span>
+                                    <button className='pagination-button'>
                                         Next
                                     </button>
                                 </div>
-
                             </div>
                         </div>
                     </main>
+                </div >
+            </div >
+            {/* --------------------------------------ADD CORE SESSION---------------------------------------- */}
+            {openSection === 'core' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Add Core Session</h3>
+                                    <button onClick={clearFormData} className="edit-cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="courseId">
+                                            Select Course<sup className="important">*</sup>
+                                        </label>
+                                        <select className="form-select" onChange={onMutate} id="courseId">
+                                            <option value={0}>---Select Course---</option>
+                                            {courses
+                                                .filter(el => el.type === 'core')
+                                                .map(course => {
+                                                    return (
+                                                        <option key={course.id} value={course.id}>
+                                                            {course.courseName}
+                                                        </option>
+                                                    );
+                                                })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="coreSessionCode">
+                                            Session Code<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="coreSessionCode"
+                                            name="coreSessionCode"
+                                            className="form-disabled"
+                                            placeholder='Session Code'
+                                            value={formData.coreSessionCode}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sessionName">
+                                            Session Name<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="sessionName"
+                                            name="sessionName"
+                                            className="form-select"
+                                            placeholder='Session Name'
+                                            value={sessionName}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sessionType">
+                                            Session Type<sup className="important">*</sup>
+                                        </label>
+                                        <select className="form-select" onChange={onMutate} id="sessionType">
+                                            <option>---Select Session Type---</option>
+                                            {sessionType.map(item => {
+                                                return (
+                                                    <option key={item.toLowerCase()} value={item}>
+                                                        {item}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sequence">
+                                            Seq#<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="sequence"
+                                            name="sequence"
+                                            className="form-select"
+                                            placeholder='sequence'
+                                            value={sequence}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="description">
+                                            Description<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="description"
+                                            name="description"
+                                            className="form-select"
+                                            placeholder='Description'
+                                            value={description}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="timeDuration">
+                                            Duration<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="timeDuration"
+                                            name="timeDuration"
+                                            className="form-select"
+                                            placeholder='Duration'
+                                            value={timeDuration}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={() => onSubmit('core')}>Save</Button>
+                                <Button style="cancel" onClick={clearFormData} >Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
 
+            {/* --------------------------------------ADD ELECTIVE SESSION---------------------------------------- */}
+            {openSection === 'elective' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Add Elective Session</h3>
+                                    <button onClick={clearFormData} className="edit-cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="courseId">
+                                            Select Course<sup className="important">*</sup>
+                                        </label>
+                                        <select className="form-select" onChange={onMutate} id="courseId">
+                                            <option value={0}>---Select Course---</option>
+                                            {courses
+                                                .filter(el => el.type === 'core')
+                                                .map(course => {
+                                                    return (
+                                                        <option key={course.id} value={course.id}>
+                                                            {course.courseName}
+                                                        </option>
+                                                    );
+                                                })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="electiveSessionCode">
+                                            Session Code<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="electiveSessionCode"
+                                            name="electiveSessionCode"
+                                            className="form-disabled"
+                                            placeholder='Session Code'
+                                            value={formData.electiveSessionCode}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sessionName">
+                                            Session Name<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="sessionName"
+                                            name="sessionName"
+                                            className="form-select"
+                                            placeholder='Session Name'
+                                            value={sessionName}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sessionType">
+                                            Session Type<sup className="important">*</sup>
+                                        </label>
+                                        <select className="form-select" onChange={onMutate} id="sessionType">
+                                            <option>---Select Session Type---</option>
+                                            {sessionType.map(item => {
+                                                return (
+                                                    <option key={item.toLowerCase()} value={item}>
+                                                        {item}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="sequence">
+                                            Seq#<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="sequence"
+                                            name="sequence"
+                                            className="form-select"
+                                            placeholder='sequence'
+                                            value={sequence}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="description">
+                                            Description<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="description"
+                                            name="description"
+                                            className="form-select"
+                                            placeholder='Description'
+                                            value={description}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="timeDuration">
+                                            Duration<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="timeDuration"
+                                            name="timeDuration"
+                                            className="form-select"
+                                            placeholder='Duration'
+                                            value={timeDuration}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={() => onSubmit('elective')}>Save</Button>
+                                <Button style="cancel" onClick={clearFormData} >Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
             <DeleteModal isOpen={isDeleteModalOpen} onCancel={handleCancelDelete} onConfirm={handleDelete} />
         </>
     )
