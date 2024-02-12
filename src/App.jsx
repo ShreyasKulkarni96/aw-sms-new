@@ -21,6 +21,7 @@ import AddFaculty from "./pages/FacultyManagement/AddFaculty";
 import FacultyExperience from "./pages/FacultyManagement/FacultyExperience";
 import UpdateStudent from "./pages/StudentManagement/UpdateStudent";
 import UpdateFaculty from "./pages/FacultyManagement/UpdateFaculty";
+import LeaveManagement from "./pages/LeaveManagement";
 
 const router = createBrowserRouter([
   {
@@ -101,6 +102,11 @@ const router = createBrowserRouter([
   {
     path: '/schedule-management',
     element: <ScheduleManagement />
+  },
+  {
+    path: '/leave-management',
+    element: <LeaveManagement />
+
   }
 ])
 
