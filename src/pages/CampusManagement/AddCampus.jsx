@@ -154,6 +154,8 @@ const AddCampus = () => {
         }
     }
 
+
+
     return (
         <>
             <div className="main-page">
@@ -273,7 +275,7 @@ const AddCampus = () => {
                                         </div>
                                         <div className="w-full flex h-1/4 mt-7">
                                             <Button onClick={onSubmit} style='primary'>Save</Button>
-                                            <Button style='cancle' onClick={clearFormData}>Cancle</Button>
+                                            <Button style='cancel' onClick={clearFormData}>Cancel</Button>
                                         </div>
                                         <div className='w-full' />
                                     </div>

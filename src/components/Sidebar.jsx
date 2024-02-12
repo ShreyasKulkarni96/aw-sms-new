@@ -134,12 +134,12 @@ const Sidebar = () => {
                                             <span className="list-name ml-5">Manage Course</span>
                                         </li>
                                     </Link>
-                                    <Link>
+                                    <Link to='/session-management'>
                                         <li className='sublist'>
                                             <span className="list-name ml-5">Manage Session</span>
                                         </li>
                                     </Link>
-                                    <Link>
+                                    <Link to='/topic-management'>
                                         <li className='sublist'>
                                             <span className="list-name ml-5">Manage Topic</span>
                                         </li>
@@ -158,7 +158,7 @@ const Sidebar = () => {
                             </Link>
 
                             {/* Schedule Management */}
-                            <Link>
+                            <Link to='/schedule-management'>
                                 <li className='list'>
                                     <div className="list-items">
                                         <EditCalendarRoundedIcon className='icons' style={{ fontSize: '20px' }} />

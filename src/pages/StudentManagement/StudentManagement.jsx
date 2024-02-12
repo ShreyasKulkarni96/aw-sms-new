@@ -9,24 +9,24 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import BorderColorRoundedIcon from '@mui/icons-material/BorderColorRounded';
 import { STUDENT_DETAILS } from '../../constants/api';
 import { Link } from 'react-router-dom';
+import DeleteModal from '../../components/shared/DeleteModal';
 
 
 const StudentManagement = () => {
     const [students, setStudents] = useState([]);
-
-    // Handle all the errors
-    const handleRequestError = (error) => {
-        toast.error(error.response?.data?.message || 'An error occurred during the request.');
-    };
+    const [studentId, setStudentId] = useState(null);
+    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchStudents();
     }, []);
 
+    // Fetch the student data
     const fetchStudents = async () => {
         try {
             const { data } = await APIService.get(STUDENT_DETAILS);
             setStudents(data.data);
+            console.log(students)
         } catch (error) {
             if (error.response && error.response.data) {
                 toast.error(error.response.data?.message || 'Something Went Wrong');
@@ -36,6 +36,7 @@ const StudentManagement = () => {
     }
 
     const tableHeader = [
+        { Header: 'Serial No.', accessor: 'serialNo' },
         { Header: 'Unique_ID', accessor: 'U_S_ID' },
         { Header: 'Name', accessor: 'studentName' },
         { Header: 'Phone', accessor: 'phone1' },
@@ -49,12 +50,25 @@ const StudentManagement = () => {
             accessor: 'action',
             Cell: ({ row }) => (
                 <>
-                    <buton className="mr-2"><BorderColorRoundedIcon className='icon-style' /></buton>
-                    <button><DeleteRoundedIcon className='icon-style' /></button>
+                    <Link to={`/edit-student/${row.original.studentId}`}>
+                        <button className="mr-2"><BorderColorRoundedIcon className='icon-style' /></button>
+                    </Link>
+                    <button onClick={() => handleDeleteConfirmation(row.original.studentId)}><DeleteRoundedIcon className='icon-style' /></button>
                 </>
             )
         }
     ];
+
+    const studentWithSerialNo = useMemo(() => {
+        return students.map((student, index) => {
+            const formattedEnrolledAt = new Date(student.enrolledAt).toISOString().replace('T', ' ').split('.')[0]; // Format enrollment date
+            return {
+                ...student,
+                serialNo: index + 1,
+                enrolledAt: formattedEnrolledAt
+            };
+        });
+    }, [students]);
 
     const tableColumn = useMemo(() => tableHeader, []);
 
@@ -67,8 +81,68 @@ const StudentManagement = () => {
         canNextPage,
         previousPage,
         nextPage,
-        state: { pageIndex } } = useTable({ columns: tableColumn, data: students }, useSortBy, usePagination);
+        state: { pageIndex } } = useTable({ columns: tableColumn, data: studentWithSerialNo }, useSortBy, usePagination);
 
+    const handleDeleteConfirmation = (id) => {
+        setStudentId(id);
+        setDeleteModalOpen(true);
+    }
+
+    const handleDelete = async () => {
+        try {
+            if (facultyId) {
+                await APIService.delete(`/student-details/${studentId}`);
+                await fetchStudents();
+                toast.success('Student deleted successfully')
+            }
+        } catch (error) {
+            const errorMessage = 'Temporarily Unable to delete Student';
+            if (error.response && error.response.data) {
+                return toast.error(errorMessage || error.response.data.message);
+            }
+            toast.error(errorMessage)
+        }
+        setDeleteModalOpen(false);
+    }
+
+    const handleCancelDelete = () => {
+        setDeleteModalOpen(false);
+    }
+
+    const handleImportButtonClick = () => {
+        document.getElementById('fileInput').click();
+    };
+
+    const handleFileChange = async e => {
+        const fileInput = document.getElementById('fileInput');
+        const file = e.target.files[0];
+
+        if (!file) {
+            toast.error('Please select a file to import students.');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            await APIService.post('/student-addBulk', formData);
+
+            toast.success('Bulk students imported successfully.');
+            fetchStudents();
+
+            // Reset the file input field
+            fileInput.value = null;
+        } catch (err) {
+            console.log(err);
+            if (err.response && err.response.data.message === 'Student with data already exists') {
+                toast.error('Student with data already exists');
+            } else {
+                toast.error('An error occurred while importing students.');
+            }
+            fileInput.value = null;
+        }
+    };
 
     return (
         <>
@@ -89,7 +163,16 @@ const StudentManagement = () => {
                                             <Link to="/add-student">
                                                 <Button style='small'>Enroll New Student</Button>
                                             </Link>
-                                            <Button style='small'>Import Bulk Students</Button>
+                                            <button type="button" className='import-file-button' onClick={handleImportButtonClick}>
+                                                Import Bulk Student
+                                            </button>
+                                            <input
+                                                type="file"
+                                                id="fileInput"
+                                                accept=".xlsx"
+                                                style={{ display: 'none' }}
+                                                onChange={handleFileChange}
+                                            />
                                         </div>
                                     </div>
                                     <div className='card-content mt-2'>
@@ -228,7 +311,7 @@ const StudentManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* -----------------------PAGINATIOn----------------------------- */}
+                                {/* -----------------------PAGINATION----------------------------- */}
                                 <div className='pagination-wrapper'>
                                     <button className='pagination-button'>
                                         Previous
@@ -243,6 +326,7 @@ const StudentManagement = () => {
                     </main>
                 </div>
             </div>
+            <DeleteModal isOpen={isDeleteModalOpen} onCancel={handleCancelDelete} onConfirm={handleDelete} />
         </>
     )
 }

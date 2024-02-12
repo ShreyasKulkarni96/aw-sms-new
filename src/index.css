@@ -29,6 +29,67 @@ body {
   @apply text-gray-400 hover:text-gray-hover cursor-pointer
 }
 
+.import-file-button {
+  @apply mr-1 px-5 py-2 inline-block text-sm font-semibold tracking-wide bg-orange-900 rounded-3xl duration-300 hover:bg-orange-700 shadow-md text-white
+}
+
+/* ----------------------------------------MODAL----------------------------------- */
+
+.modal-open {
+  @apply fixed inset-0 overflow-auto
+}
+
+.modal-wrapper {
+  @apply flex items-end justify-center min-h-screen pt-4 px-20 pb-20 text-center sm:block sm:p-0 rounded-lg
+}
+
+.modal-opacity {
+  @apply fixed inset-0 transition-opacity
+}
+
+.modal-op {
+  @apply absolute inset-0 bg-gray-500 opacity-75
+}
+
+.modal-content {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full
+}
+
+.modal-title-content {
+  @apply bg-orange-200 px-4 pt-5 pb-4 sm:p-5 sm:pb-3
+}
+
+.modal-title-wrapper {
+  @apply flex justify-between items-center
+}
+
+.modal-title {
+  @apply text-xl font-semibold text-gray-900
+}
+
+.modal-section {
+  @apply bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4
+}
+
+.cancel-button {
+  @apply text-gray-700 hover:text-gray-900
+}
+
+
+/* -------------------------------------------EDIT MODAL STYLE------------------------- */
+
+.edit-modal-content {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full
+}
+
+.light-divider {
+  @apply my-3 mx-2 bg-gray-200 h-[1px]
+}
+
+.modal-button {
+  @apply mt-2 text-right mb-4 mr-4
+}
+
 /* ------------------------------------------DELETE MODAL STYLE-------------------------------------- */
 
 .delete-modal-wrapper {
@@ -300,6 +361,42 @@ body {
   @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
 }
 
+.accordion-card-open {
+  @apply w-full border-2 bg-gray-200 rounded-md p-2
+}
+
+.accordion-card-close {
+  @apply w-full border-2 rounded-md p-2
+}
+
+.accordion-details {
+  @apply w-full flex justify-between cursor-pointer
+}
+
+.accordion-title {
+  @apply text-lg ml-4 text-gray-main font-semibold
+}
+
+.accordion-content {
+  @apply p-4 border-2 rounded-md bg-white
+}
+
+.important {
+  @apply text-red-600
+}
+
+.gender-select {
+  @apply mt-10 flex justify-around
+}
+
+.same-address {
+  @apply text-xs mt-1 text-red-600
+}
+
+.save-and-cancle {
+  @apply absolute bottom-2 right-4 mb-5 mr-4
+}
+
 /* -----------------------TABLE CSS------------------------ */
 .table {
   @apply min-w-full border
@@ -347,4 +444,14 @@ body {
 
 .form-disabled {
   @apply form-select bg-gray-200
+}
+
+/* ----------------------------------PROGRAMS STYLES---------------------------------- */
+
+.filter-label {
+  @apply inline-flex items-center mr-6
+}
+
+.filter-name {
+  @apply ml-2 text-base font-medium
 }

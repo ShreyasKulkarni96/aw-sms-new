@@ -13,6 +13,14 @@ import StudentManagement from "./pages/StudentManagement/StudentManagement";
 import BatchManagement from "./pages/BatchManagement";
 import FacultyManagement from "./pages/FacultyManagement/FacultyManagement";
 import AddStudent from "./pages/StudentManagement/AddStudent";
+import CourseManagement from "./pages/ProgramManagement/CourseManagement";
+import SessionManagement from "./pages/ProgramManagement/SessionManagement";
+import TopicManagement from "./pages/ProgramManagement/TopicManagement";
+import ScheduleManagement from "./pages/ScheduleManagement";
+import AddFaculty from "./pages/FacultyManagement/AddFaculty";
+import FacultyExperience from "./pages/FacultyManagement/FacultyExperience";
+import UpdateStudent from "./pages/StudentManagement/UpdateStudent";
+import UpdateFaculty from "./pages/FacultyManagement/UpdateFaculty";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +47,18 @@ const router = createBrowserRouter([
     element: <FacultyManagement />
   },
   {
+    path: '/add-faculty',
+    element: <AddFaculty />
+  },
+  {
+    path: '/faculty-experience/:facultyId/:facultyName',
+    element: <FacultyExperience />
+  },
+  {
+    path: "/edit-faculty/:facultyId?",
+    element: <UpdateFaculty />
+  },
+  {
     path: '/manage-batch',
     element: <BatchManagement />
   },
@@ -51,11 +71,24 @@ const router = createBrowserRouter([
     element: <AddStudent />
   },
   {
-    path: '/edit-student/:studentId?'
+    path: '/edit-student/:studentId?',
+    element: <UpdateStudent />
   },
   {
     path: '/program-management',
     element: <ProgramManagement />
+  },
+  {
+    path: '/course-management',
+    element: <CourseManagement />
+  },
+  {
+    path: '/session-management',
+    element: <SessionManagement />
+  },
+  {
+    path: '/topic-management',
+    element: <TopicManagement />
   },
   {
     path: '/account-management',
@@ -64,6 +97,10 @@ const router = createBrowserRouter([
   {
     path: '/academicyear-management',
     element: <AcademicYearManagement />
+  },
+  {
+    path: '/schedule-management',
+    element: <ScheduleManagement />
   }
 ])
 

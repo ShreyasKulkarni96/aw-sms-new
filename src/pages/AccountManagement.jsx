@@ -4,12 +4,12 @@ import { toast } from 'react-toastify';
 import { useTable, useSortBy, usePagination } from 'react-table';
 
 import { GET_BATCH_DATA, GET_INVOICES } from '../constants/api';
-
+import jsPDF from "jspdf";
 import Button from '../components/Button';
 import Sidebar from '../components/Sidebar';
 import APIService from "../services/APIService";
 import TopHeader from '../components/TopHeader';
-import generatePDF from '../constants/generatePDF';
+import Logo from "../assets/images/logo.png";
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 
 const AccountManagement = () => {
@@ -79,6 +79,7 @@ const AccountManagement = () => {
 
     //Render table
     const tableHeader = [
+        { Header: 'Serial No', accessor: 'serialNo' },
         { Header: 'Invoice Date', accessor: 'invoice_date' },
         { Header: 'Student Name', accessor: 'student_detail.user.name' },
         { Header: 'Batch Number', accessor: 'batch_code' },
@@ -89,11 +90,22 @@ const AccountManagement = () => {
             Header: 'Action', accessor: 'action',
             Cell: ({ row }) => (
                 <>
-                    <button><PrintRoundedIcon className='icon-style' /></button>
+                    <button onClick={() => generatePDF(row.original)}><PrintRoundedIcon className='icon-style' /></button>
                 </>
             )
         }
     ];
+
+    const invoiceSerialNo = useMemo(() => {
+        return invoices.map((invoice, index) => {
+            const formattedInvoiceDate = new Date(invoice.invoice_date).toISOString().replace('T', ' ').split('.')[0]; // Format enrollment date
+            return {
+                ...invoice,
+                serialNo: index + 1,
+                invoice_date: formattedInvoiceDate
+            };
+        });
+    }, [invoices]);
 
     const tableColumn = useMemo(() => tableHeader, []);
 
@@ -107,7 +119,7 @@ const AccountManagement = () => {
         previousPage,
         nextPage,
         setPageSize,
-        state: { pageIndex, pageSize } } = useTable({ columns: tableColumn, data: invoices, initialState: { pageSize: 10 } }, useSortBy, usePagination);
+        state: { pageIndex, pageSize } } = useTable({ columns: tableColumn, data: invoiceSerialNo, initialState: { pageSize: 10 } }, useSortBy, usePagination);
 
     const handleDateChange = (e) => {
         const { name, value } = e.target;
@@ -213,6 +225,58 @@ const AccountManagement = () => {
         })
     }
 
+    const generatePDF = (data) => {
+        console.log(data)
+        const doc = new jsPDF();
+
+        const logoWidth = 50;
+        const centerX = (doc.internal.pageSize.width - logoWidth) / 2;
+
+        const backgroundHeight = 20;
+        doc.setFillColor(0, 0, 0);
+        doc.rect(centerX, 10, logoWidth, backgroundHeight, 'F');
+
+
+        const logoImage = Logo;
+        doc.addImage(logoImage, 'PNG', centerX, 10, logoWidth, 20);
+
+
+        doc.setFontSize(18);
+        doc.text('Invoice Details', 80, 40);
+
+
+        doc.setFontSize(12);
+        doc.text(`Invoice Date: ${data.invoice_date}`, 20, 70);
+        doc.text(`Invoice Number: ${data.invoice_number}`, 20, 80);
+
+
+        doc.text('Student Details', 20, 100);
+        doc.text('-----------------------', 20, 110);
+        doc.text(`Name: ${data.student_detail.user.name}`, 20, 120);
+        doc.text(`Batch Code: ${data.batch_code.toString()}`, 20, 130);
+
+
+        doc.text('Invoice Amount', 20, 150);
+        doc.text('-----------------------', 20, 160);
+        doc.text(`Amount: ${data.amount}`, 20, 170);
+
+
+        const paidMarkX = 100;
+        const paidMarkY = 170;
+        doc.text('Paid', paidMarkX, paidMarkY);
+
+
+        const balanceX = 20;
+        const balanceY = 190;
+        doc.text('Balance Remaining', balanceX, balanceY);
+        doc.text('-----------------------', balanceX, balanceY + 10);
+        doc.text(`Amount: ${data.student_detail.accountDetails.balanceAmount}`, balanceX, balanceY + 20);
+        doc.setDrawColor(255, 0, 0);
+        doc.rect(balanceX, balanceY + 20, 40, 10, 'S');
+
+        doc.save('myPDF.pdf');
+    };
+
     return (
         <>
             <div className='main-page'>
@@ -224,6 +288,7 @@ const AccountManagement = () => {
                     <main className='main'>
                         <div className='main-grid'>
                             <div className='page-content'>
+                                {/* --------------TOP CARD--------------- */}
                                 <div className='top-card'>
                                     <div className='card-content'>
                                         <div className='card-header'>Create Invoice</div>
@@ -373,7 +438,7 @@ const AccountManagement = () => {
                                         <div></div>
                                         <div>
                                             <Button style="small" onClick={handleCreateInvoices}>Create Invoices</Button>
-                                            <Button style='cancle' onClick={clearFormData}>Cancel</Button>
+                                            <Button style='cancel' onClick={clearFormData}>Cancel</Button>
                                         </div>
                                     </div>
                                 </div>
@@ -419,7 +484,7 @@ const AccountManagement = () => {
                                     </button>
                                     <span className='m-3 font-bold'>Page {pageIndex + 1} of {page.length}</span>
                                     <button onClick={() => nextPage()} className='mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg'>
-                                        back
+                                        Next
                                     </button>
                                 </div>
 
