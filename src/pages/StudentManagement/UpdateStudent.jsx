@@ -41,7 +41,8 @@ const UpdateStudent = () => {
         totalFees: '',
         paidFees: '',
         discount: '',
-        pdcDetails: ''
+        pdcDetails: '',
+        totalPayable: ''
     };
 
     const [formData, setFormData] = useState(initialData);
@@ -68,7 +69,8 @@ const UpdateStudent = () => {
         totalFees,
         paidFees,
         discount,
-        pdcDetails
+        pdcDetails,
+        totalPayable
     } = formData;
 
     useEffect(() => {
@@ -96,6 +98,7 @@ const UpdateStudent = () => {
     const fetchStudentDetails = async () => {
         try {
             const { data } = await APIService.get(`${STUDENT_DETAILS}/${params.studentId}`);
+            console.log(data)
             setFormData(prevState => ({
                 ...prevState,
                 name: data.data.name,
@@ -120,7 +123,9 @@ const UpdateStudent = () => {
                 totalFees: data.data.student_detail.accountDetails.totalFees,
                 paidFees: data.data.student_detail.accountDetails.paidFees,
                 discount: data.data.student_detail.accountDetails.discount,
-                pdcDetails: data.data.student_detail.accountDetails.pdcDetails
+                pdcDetails: data.data.student_detail.accountDetails.pdcDetails,
+                totalPayable: data.data.student_detail.accountDetails.totalPayable,
+                balanceAmount: data.data.student_detail.accountDetails.balanceAmount
             }));
             // setIsLoading(false);
         } catch (error) {
@@ -892,6 +897,7 @@ const UpdateStudent = () => {
                                                             name="totalPayable"
                                                             className="form-disabled"
                                                             placeholder='Total Payable'
+                                                            value={totalPayable}
                                                         />
                                                     </div>
                                                 </div>

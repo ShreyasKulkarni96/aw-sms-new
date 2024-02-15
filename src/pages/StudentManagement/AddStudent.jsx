@@ -1,31 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import Sidebar from '../../components/Sidebar';
-import APIService from "../../services/APIService";
 import TopHeader from '../../components/TopHeader';
-import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import APIService from "../../services/APIService";
 import { format, subDays, subYears, isDate } from 'date-fns';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceRounded';
-import { GET_BATCHES, STUDENT_DETAILS } from '../../constants/api';
 
 const AddStudent = () => {
-    const navigate = useNavigate();
     const [sameAddress, setSameAddress] = useState(false);
     const [openSection, setOpenSection] = useState(null);
-    const paymentPlans = ['CASH', 'CHEQUE', 'ONLINE PAYMENT'];
     const [batches, setBatches] = useState([]);
+    const [invoiceWindow, setInvoiceWindow] = useState(false);
+    const [createdStudentName, setCreatedStudentName] = useState('');
+    const [invoiceFormData, setInvoiceFormData] = useState({
+        date: format(new Date(), 'yyyy-MM-dd'),
+        invoice_date: '',
+        batch_code: '',
+        student_id: '',
+        paymentPlan: '',
+        amount: '',
+        balanceAmount: '',
+        totalPayable: '',
+    });
     const initialData = {
         name: '',
         DOB: '',
         gender: '',
+        localAddress: '',
+        permanentAddress: '',
         email: '',
         phone1: '',
         phone2: '',
-        localAddress: '',
-        permanentAddress: '',
         guardianName: '',
         relation: '',
         guardianGender: '',
@@ -33,24 +42,42 @@ const AddStudent = () => {
         guardianEmail: '',
         guardianPhone: '',
         batchId: '',
-        Admission: format(new Date(), 'yyyy-MM-dd'),
+        dateOfAdmission: format(new Date(), 'yyyy-MM-dd'),
         paymentPlan: '',
         totalFees: '',
-        paidFees: '',
         discount: '',
         totalPayable: '',
+        paidFees: '',
+        balanceAmount: '',
         pdcDetails: '',
-        balanceAmount: ''
     }
+    const [formData, setFormData] = useState(initialData);
 
-    // Handle all the errors
-    const handleRequestError = (error) => {
-        toast.error(error.response?.data?.message || 'An error occurred during the request.');
-    };
-
-    const handleSectionToggle = (section) => {
-        setOpenSection(openSection === section ? null : section);
-    };
+    let {
+        name,
+        DOB,
+        gender,
+        localAddress,
+        permanentAddress,
+        email,
+        phone1,
+        phone2,
+        guardianName,
+        relation,
+        guardianGender,
+        guardianAddress,
+        guardianEmail,
+        guardianPhone,
+        batchId,
+        dateOfAdmission,
+        paymentPlan,
+        totalFees,
+        discount,
+        totalPayable,
+        paidFees,
+        balanceAmount,
+        pdcDetails,
+    } = formData;
 
     const Relation = [
         'Father',
@@ -65,60 +92,31 @@ const AddStudent = () => {
         'Cousins',
         'Other'
     ];
-
-    const [formData, setFormData] = useState(initialData);
-
-    let {
-        name,
-        DOB,
-        email,
-        gender,
-        phone1,
-        phone2,
-        localAddress,
-        permanentAddress,
-        guardianName,
-        relation,
-        guardianGender,
-        guardianAddress,
-        guardianEmail,
-        guardianPhone,
-        dateOfAdmission,
-        paymentPlan,
-        totalFees,
-        paidFees,
-        discount,
-        totalPayable,
-        pdcDetails,
-    } = formData;
+    const paymentPlans = ['CASH', 'CHEQUE', 'ONLINE PAYMENT'];
 
     useEffect(() => {
         fetchBatches();
+
     }, []);
+
+    const handleSectionToggle = (section) => {
+        setOpenSection(openSection === section ? null : section);
+    };
 
     const fetchBatches = async () => {
         try {
-            const { data } = await APIService.get(GET_BATCHES);
+            const url = `/batch`;
+            const { data } = await APIService.get(url);
             setBatches(data.data);
         } catch (error) {
-            if (error.response && error.response.data) {
-                toast.error(error.response.data?.message || 'Something Went Wrong!');
-            }
+            console.log(error);
             toast.error('Some Error occurred while fetching batches');
         }
     };
 
-    const onMutate = e => {
+    const onMutate = (e) => {
         const { id, value } = e.target;
-        console.log(id, value)
-
-        if (id === 'discount') {
-            const discountValue = value !== '' ? parseFloat(value) : '';
-            setFormData(prevState => ({
-                ...prevState,
-                [id]: discountValue,
-            }));
-        }
+        console.log(id, value);
 
         // Use a regular expression to check for integer values
         if ((id === 'phone1' || id === 'phone2' || id === 'guardianPhone') && !/^\d*$/.test(value)) {
@@ -142,59 +140,16 @@ const AddStudent = () => {
                 ...prevState,
                 permanentAddress: value
             }));
-        } else if (id === 'totalFees') {
-            // Check if the totalFees input is empty or 0, and reset paidFees and discount accordingly
-            const totalFeesValue = parseFloat(value);
-            const resetPaidFees = isNaN(totalFeesValue) || totalFeesValue <= 0;
-
-            const nonNegativeTotalFees = resetPaidFees ? '' : Math.max(0, totalFeesValue);
-
-            setFormData(prevState => ({
-                ...prevState,
-                [id]: value,
-                paidFees: resetPaidFees ? '' : prevState.paidFees,
-                discount: resetPaidFees ? '' : prevState.discount,
-                totalFees: nonNegativeTotalFees.toFixed(2),
-            }));
         }
 
         // Update the state for other cases
         setFormData(prevState => ({
             ...prevState,
-            [id]: value
+            [id]: value,
         }));
-    };
-
-    useEffect(() => {
-        const totalFeesValue = parseFloat(totalFees);
-        const paidFeesValue = parseFloat(paidFees);
-        const balanceAmountValue = totalFeesValue - paidFeesValue;
-
-        setFormData(prevState => ({
-            ...prevState,
-            balanceAmount: isNaN(balanceAmountValue) ? '' : balanceAmountValue.toFixed(2)
-        }));
-    }, [totalFees, paidFees]);
-
-    const onCalculateDiscount = () => {
-        const discountValue = parseFloat(discount.trim());
-
-        if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
-            return toast.warn('Discount must be a number between 0 and 100');
-        }
-        if (!isNaN(totalFees) && !isNaN(discountValue)) {
-            const discountAmount = (totalFees * discountValue) / 100;
-            const discountedTotalFees = totalFees - discountAmount;
-
-            setFormData(prevState => ({
-                ...prevState,
-                totalFees: discountedTotalFees.toFixed(2)
-            }));
-        }
     }
 
     const onSubmit = async () => {
-        // 1.) Validations on Required Field
 
         // Check if "name" is provided
         if (!name) {
@@ -355,7 +310,15 @@ const AddStudent = () => {
             return; // Don't proceed if it's empty
         }
 
-        //2.7 Check if totalFees is a number
+        // if total fees is 0 show confirmation alert
+        if (!totalFees) {
+            const confirmZeroFees = window.confirm('Are you sure Total fees would be zero?');
+            if (!confirmZeroFees) {
+                return; // User clicked "No," prevent further submission
+            }
+        }
+
+
         if (isNaN(totalFees)) {
             return toast.warn('Total Fees must be a number');
         }
@@ -364,12 +327,9 @@ const AddStudent = () => {
             return toast.warn('Discount should be between 0 and 100');
         }
 
-        // 2.8) Check if paid fees and total fees are available, then paid fees should not be more than total fees
         totalFees = totalFees * 1;
         paidFees = paidFees * 1;
-        const balanceAmount = totalFees - paidFees;
         if (totalFees || paidFees) {
-            console.log({ totalFees, paidFees });
             if (totalFees < paidFees) return toast.warn('Paid fees cannot be more than total fees');
             if (discount * 1) {
                 const totalDiscount = (parseInt(totalFees) * parseInt(discount)) / 100;
@@ -378,23 +338,16 @@ const AddStudent = () => {
             }
         }
 
-        const totalFeesValue = parseFloat(totalFees);
         const paidFeesValue = parseFloat(paidFees);
-        const balanceAmountValue = totalFeesValue - paidFeesValue;
+        const discountValue = parseFloat(discount);
+        const totalPayableValue = parseFloat(totalPayable);
+        const discountedFees = totalPayableValue - (totalPayableValue * discountValue) / 100;
+        const balanceAmountValue = discountedFees - paidFeesValue;
 
         setFormData(prevState => ({
             ...prevState,
             balanceAmount: balanceAmountValue.toFixed(2)
         }));
-
-
-        // if total fees is 0 show confirmation alert
-        if (!totalFees) {
-            const confirmZeroFees = window.confirm('Are you sure Total fees would be zero?');
-            if (!confirmZeroFees) {
-                return; // User clicked "No," prevent further submission
-            }
-        }
 
         const payload = {};
         payload.userDetails = {
@@ -425,24 +378,29 @@ const AddStudent = () => {
             totalFees: totalFees * 1,
             paidFees: paidFees * 1,
             discount: discount ? discount : 0,
+            totalPayable: totalPayable * 1,
             pdcDetails,
-            balanceAmount: balanceAmount.toFixed(2)
+            balanceAmount: balanceAmountValue
         };
 
-        console.log(payload)
+        await addNewFStudent(payload);
+    }
 
-        // Hit the APIs
-        await addNewStudent(payload);
-    };
+    const addNewFStudent = async studentDetails => {
 
-    const addNewStudent = async studentDetails => {
         try {
-            const { data } = await APIService.post(STUDENT_DETAILS, studentDetails);
-            if (data.code === 201) toast.success('Student Enrolled Successfully');
+            const { data } = await APIService.post('/student-details', studentDetails);
+
+
+            if (data.code === 201) {
+                setDataAndState(data);
+                createInvoice();
+                toast.success('Student Enrolled Successfully');
+            }
+
             clearFormData();
-            navigate('/student-management');
         } catch (error) {
-            console.log(error);
+            clearFormData();
             if (error.response && error.response.data) {
                 return toast.error(error.response.data?.message || 'Something Went Wrong');
             }
@@ -450,23 +408,38 @@ const AddStudent = () => {
         }
     };
 
-    const clearFormData = () => {
-        setFormData(initialData);
-        const clearedForm = {};
-        for (const key in formData) {
-            if (key === 'DOB') {
-                clearFormData[key] = format(subYears(new Date(), 5), 'yyyy-MM-dd');
-                continue;
-            }
-            if (key === 'dateOfAdmission') {
-                clearFormData[key] = format(new Date(), 'yyyy-MM-dd');
-                continue;
-            }
-            clearedForm[key] = '';
-        }
-        setFormData(clearedForm);
-        navigate('/student-management');
+    const setDataAndState = (data) => {
+        console.log("Iam here to save data", data)
+        setCreatedStudentName(data?.data?.userDetails?.name);
+        console.log(data.data.studentDetails.academicDetails.batchId)
+        setInvoiceFormData(prevState => ({
+            ...prevState,
+            invoice_date: format(new Date(), 'yyyy-MM-dd'),
+            batch_code: data.data.studentDetails.academicDetails.batchCode,
+            student_id: data.data.studentDetails.id,
+            paymentPlan: data.data.studentDetails.accountDetails.paymentPlan,
+            amount: data.data.studentDetails.accountDetails.paidFees,
+            balanceAmount: data.data.studentDetails.accountDetails.balanceAmount,
+            totalPayable: data.data.studentDetails.accountDetails.totalPayable
+        }));
     };
+
+
+    const calculateDiscount = () => {
+        const discountValue = parseFloat(discount.trim());
+        if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+            return toast.warn('Discount must be a number between 0 and 100');
+        }
+
+        if (!isNaN(totalFees) && !isNaN(discountValue)) {
+            const discountAmount = (totalFees * discountValue) / 100;
+            const discountedTotalFees = totalFees - discountAmount;
+            setFormData(prevState => ({
+                ...prevState,
+                totalPayable: discountedTotalFees.toFixed(2)
+            }));
+        }
+    }
 
     const onReset = () => {
         setFormData(prevState => ({
@@ -478,6 +451,17 @@ const AddStudent = () => {
             totalPayable: ''
         }));
     }
+
+    useEffect(() => {
+        const totalFeesValue = parseFloat(totalFees);
+        const paidFeesValue = parseFloat(paidFees);
+        const balanceAmountValue = totalPayable - paidFeesValue;
+
+        setFormData(prevState => ({
+            ...prevState,
+            balanceAmount: isNaN(balanceAmountValue) ? '' : balanceAmountValue.toFixed(2)
+        }));
+    }, [totalFees, paidFees]);
 
     const handleDateFocus = () => {
         const currentDate = new Date();
@@ -491,13 +475,65 @@ const AddStudent = () => {
         }
     };
 
+    const clearFormData = () => {
+        const clearedForm = {};
+        for (const key in formData) {
+            if (key === 'DOB') {
+                clearFormData[key] = format(subYears(new Date(), 5), 'yyyy-MM-dd');
+                continue;
+            }
+            if (key === 'dateOfAdmission') {
+                clearFormData[key] = format(new Date(), 'yyyy-MM-dd');
+                continue;
+            }
+            clearedForm[key] = '';
+        }
+        setFormData(clearedForm);
+        setFormData(initialData);
+    };
+
+    const createInvoice = () => {
+        setInvoiceWindow(true);
+
+    }
+
+    const handleCancelEdit = () => {
+        setInvoiceWindow(false);
+    }
+
+    const handleCreateInvoice = async () => {
+        try {
+            const { data } = await APIService.post('/invoices', invoiceFormData);
+            if (data.code === 201) {
+                toast.success('Invoice created Successfully');
+                setCreatedStudentName('');
+                setInvoiceFormData({
+                    date: format(new Date(), 'yyyy-MM-dd'),
+                    invoice_date: '',
+                    batch_code: '',
+                    student_id: '',
+                    paymentPlan: '',
+                    amount: '',
+                    balanceAmount: '',
+                    totalPayable: '',
+                })
+            }
+        } catch (error) {
+            handleRequestError('Error creating Invoices');
+            if (error.response && error.response.data) {
+                toast.error(error.response.data?.message || 'Something Went Wrong');
+            }
+            toast.error('Invoice creation failed');
+        }
+    }
+
     return (
         <>
-            <div className='main-page'>
+            <div className='flex h-screen'>
                 <div>
                     <Sidebar />
                 </div>
-                <div className='main-page-content'>
+                <div className='flex-1 flex-col h-screen overflow-hidden'>
                     <TopHeader />
                     <main className='main'>
                         <div className='main-grid'>
@@ -507,16 +543,17 @@ const AddStudent = () => {
                                         <div className='card-header'>Add Student</div>
                                         <div>
                                             <Link to="/student-management">
-                                                <Button style='small'>
+                                                <Button onClick={clearFormData} style='small'>
                                                     <KeyboardBackspaceRoundedIcon className='icons mr-1' />
                                                     Back
                                                 </Button>
                                             </Link>
                                         </div>
                                     </div>
+
                                     {/* -------------------------PERSONAL DETAILS----------------------*/}
                                     <div>
-                                        <div onClick={() => handleSectionToggle('personal')} className={openSection === 'personal' ? "accordion-card-open" : "accordion-card-close"}>
+                                        <div onClick={() => handleSectionToggle('personal')} className={openSection === 'personal' ? "accordion-card-open mt-4" : "accordion-card-close mt-4"}>
                                             <div className='accordion-details'>
                                                 <span className="accordion-title">Personal Details</span>
                                                 {openSection === 'personal' ? <KeyboardArrowUpRoundedIcon style={{ fontSize: '30px' }} /> : <KeyboardArrowDownRoundedIcon style={{ fontSize: '30px' }} />}
@@ -593,8 +630,8 @@ const AddStudent = () => {
                                                             name="localAddress"
                                                             className="form-select"
                                                             placeholder='Current Address'
-                                                            onChange={onMutate}
                                                             value={localAddress}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                     <div className="mr-4 w-full">
@@ -607,7 +644,8 @@ const AddStudent = () => {
                                                                 type="checkbox"
                                                                 id="sameAddressCheckbox"
                                                                 checked={sameAddress}
-                                                                onChange={onMutate} />
+                                                                onChange={onMutate}
+                                                            />
                                                             <label className='same-address'>Same as current address</label>
                                                         </div>
                                                         <input
@@ -631,20 +669,20 @@ const AddStudent = () => {
                                                             name="email"
                                                             className="form-select"
                                                             placeholder='Email'
-                                                            onChange={onMutate}
                                                             value={email}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                 </div>
                                                 <div className='card-content '>
                                                     <div className="mr-4 w-full">
-                                                        <label className="form-input" htmlFor="phoneNo1">
+                                                        <label className="form-input" htmlFor="phone1">
                                                             Phone No 1<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="phoneNo1"
-                                                            name="phoneNo1"
+                                                            id="phone1"
+                                                            name="phone1"
                                                             className="form-select"
                                                             placeholder='Phone No 1'
                                                             onChange={onMutate}
@@ -653,13 +691,13 @@ const AddStudent = () => {
                                                         />
                                                     </div>
                                                     <div className="mr-4 w-full">
-                                                        <label className="form-input" htmlFor="phoneNo2">
+                                                        <label className="form-input" htmlFor="phone2">
                                                             Phone No 2<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="phoneNo2"
-                                                            name="phoneNo2"
+                                                            id="phone2"
+                                                            name="phone2"
                                                             className="form-select"
                                                             placeholder='Phone No 2'
                                                             onChange={onMutate}
@@ -668,13 +706,13 @@ const AddStudent = () => {
                                                         />
                                                     </div>
                                                     <div className="w-full">
-                                                        <label className="form-input" htmlFor="studentId">
+                                                        <label className="form-input" htmlFor="U_S_ID">
                                                             Student ID<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="studentId"
-                                                            name="studentId"
+                                                            id="U_S_ID"
+                                                            name="U_S_ID"
                                                             className="form-disabled"
                                                             placeholder='ST-XXXXXXXXXXX'
                                                         />
@@ -682,11 +720,11 @@ const AddStudent = () => {
                                                 </div>
                                             </div>
                                         }
-
                                     </div>
+
                                     {/* ----------------------PARENT/GAURDIAN DETAILS------------------ */}
                                     <div>
-                                        <div onClick={() => handleSectionToggle('parent')} className={openSection === 'parent' ? "accordion-card-open" : "accordion-card-close"}>
+                                        <div onClick={() => handleSectionToggle('parent')} className={openSection === 'parent' ? "accordion-card-open mt-3" : "accordion-card-close mt-3"}>
                                             <div className='accordion-details'>
                                                 <span className="accordion-title">Parent / Gaurdian Details</span>
                                                 {openSection === 'parent' ? <KeyboardArrowUpRoundedIcon style={{ fontSize: '30px' }} /> : <KeyboardArrowDownRoundedIcon style={{ fontSize: '30px' }} />}
@@ -705,8 +743,8 @@ const AddStudent = () => {
                                                             name="guardianName"
                                                             className="form-select"
                                                             placeholder='Parent Name'
-                                                            onChange={onMutate}
                                                             value={guardianName}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                     <div className="mr-4 w-full">
@@ -759,41 +797,41 @@ const AddStudent = () => {
                                                 </div>
                                                 <div className='card-content mb-2'>
                                                     <div className="mr-4 w-full">
-                                                        <label className="form-input" htmlFor="address">
+                                                        <label className="form-input" htmlFor="guardianAddress">
                                                             Address<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="address"
-                                                            name="address"
+                                                            id="guardianAddress"
+                                                            name="guardianAddress"
                                                             className="form-select"
                                                             placeholder='Address'
-                                                            onChange={onMutate}
                                                             value={guardianAddress}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                     <div className="mr-4 w-full">
-                                                        <label className="form-input" htmlFor="email">
+                                                        <label className="form-input" htmlFor="guardianEmail">
                                                             Email<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="email"
-                                                            name="email"
+                                                            id="guardianEmail"
+                                                            name="guardianEmail"
                                                             className="form-select"
                                                             placeholder='Email'
-                                                            onChange={onMutate}
                                                             value={guardianEmail}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                     <div className="w-full">
-                                                        <label className="form-input" htmlFor="phoneNo">
+                                                        <label className="form-input" htmlFor="guardianPhone">
                                                             Phone No<sup className="important">*</sup>
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            id="phoneNo"
-                                                            name="phoneNo"
+                                                            id="guardianPhone"
+                                                            name="guardianPhone"
                                                             className="form-select"
                                                             placeholder='Phone No'
                                                             onChange={onMutate}
@@ -806,9 +844,10 @@ const AddStudent = () => {
                                         }
 
                                     </div>
+
                                     {/* ----------------------ACADEMIC DETAILS------------------------- */}
                                     <div>
-                                        <div onClick={() => handleSectionToggle('academic')} className={openSection === 'academic' ? "accordion-card-open" : "accordion-card-close"}>
+                                        <div onClick={() => handleSectionToggle('academic')} className={openSection === 'academic' ? "accordion-card-open mt-3" : "accordion-card-close mt-3"}>
                                             <div className='accordion-details'>
                                                 <span className="accordion-title">Academic Details</span>
                                                 {openSection === 'academic' ? <KeyboardArrowUpRoundedIcon style={{ fontSize: '30px' }} /> : <KeyboardArrowDownRoundedIcon style={{ fontSize: '30px' }} />}
@@ -819,13 +858,14 @@ const AddStudent = () => {
                                             <div className="accordion-content">
                                                 <div className='card-content mb-2'>
                                                     <div className="mr-4 w-full">
-                                                        <label className="form-input" htmlFor="batch">
+                                                        <label className="form-input" htmlFor="batchId">
                                                             Batch<sup className="important">*</sup>
                                                         </label>
                                                         <select
                                                             className='form-select'
                                                             id="batchId"
                                                             name="batchId"
+                                                            value={batchId}
                                                             onChange={onMutate}
                                                         >
                                                             <option value="">Select Batch</option>
@@ -861,9 +901,10 @@ const AddStudent = () => {
                                         }
 
                                     </div>
+
                                     {/* ---------------------ACCOUNT DETAILS----------------------------- */}
                                     <div>
-                                        <div onClick={() => handleSectionToggle('account')} className={openSection === 'account' ? "accordion-card-open" : "accordion-card-close"}>
+                                        <div onClick={() => handleSectionToggle('account')} className={openSection === 'account' ? "accordion-card-open mt-3" : "accordion-card-close mt-3"}>
                                             <div className='accordion-details'>
                                                 <span className="accordion-title">Account Details</span>
                                                 {openSection === 'account' ? <KeyboardArrowUpRoundedIcon style={{ fontSize: '30px' }} /> : <KeyboardArrowDownRoundedIcon style={{ fontSize: '30px' }} />}
@@ -881,8 +922,8 @@ const AddStudent = () => {
                                                             className='form-select'
                                                             id="paymentPlan"
                                                             name="paymentPlan"
-                                                            onChange={onMutate}
                                                             value={paymentPlan}
+                                                            onChange={onMutate}
                                                         >
                                                             <option value=" ">Select Payment Plan</option>
                                                             {paymentPlans.map(item => {
@@ -904,8 +945,8 @@ const AddStudent = () => {
                                                             name="totalFees"
                                                             className="form-select"
                                                             placeholder='Total Fees'
-                                                            onChange={onMutate}
                                                             value={totalFees}
+                                                            onChange={onMutate}
                                                         />
                                                     </div>
                                                     <div className="w-full mr-4">
@@ -918,15 +959,15 @@ const AddStudent = () => {
                                                             name="discount"
                                                             className="form-select"
                                                             placeholder='Discount'
-                                                            onChange={onMutate}
                                                             value={discount}
+                                                            onChange={onMutate}
                                                             min={0}
                                                             max={100}
                                                             disabled={!totalFees || totalFees <= 0}
                                                         />
                                                     </div>
                                                     <div className="w-full mt-6 text-center">
-                                                        <Button style='small' onClick={onCalculateDiscount} disabled={!totalFees || totalFees <= 0 || isNaN(discount) || discount < 0 || discount > 100}>Calculate Discount</Button>
+                                                        <Button style='small' onClick={calculateDiscount}>Calculate Discount</Button>
                                                         <Button style='small' onClick={onReset}>Reset</Button>
                                                     </div>
                                                 </div>
@@ -942,7 +983,6 @@ const AddStudent = () => {
                                                             name="totalPayable"
                                                             className="form-disabled"
                                                             placeholder='Total Payable'
-                                                            onChange={onMutate}
                                                             value={totalPayable}
                                                         />
                                                     </div>
@@ -956,8 +996,8 @@ const AddStudent = () => {
                                                             name="paidFees"
                                                             className="form-select"
                                                             placeholder='Paid Fees'
-                                                            onChange={onMutate}
                                                             value={paidFees}
+                                                            onChange={onMutate}
                                                             disabled={!totalFees || totalFees <= 0}
                                                         />
                                                     </div>
@@ -972,8 +1012,7 @@ const AddStudent = () => {
                                                             name="balanceAmount"
                                                             className="form-disabled"
                                                             placeholder='Balance Amount'
-                                                            onChange={onMutate}
-                                                            value={formData.balanceAmount}
+                                                            value={balanceAmount}
                                                         />
                                                     </div>
                                                     <div className="w-full">
@@ -986,8 +1025,8 @@ const AddStudent = () => {
                                                             name="pdcDetails"
                                                             className="form-select"
                                                             placeholder='PDC Details'
-                                                            onChange={onMutate}
                                                             value={pdcDetails}
+                                                            onChange={onMutate}
                                                             disabled={paymentPlan !== 'CHEQUE'}
                                                         />
                                                     </div>
@@ -998,19 +1037,185 @@ const AddStudent = () => {
 
                                     {/* ----------------------SAVE AND CANCLE BUTTONS----------------------- */}
                                     <div className='save-and-cancle'>
-                                        <Button style='small' onClick={onSubmit}>Save</Button>
-                                        <Link>
-                                            <Button style='cancel' onClick={clearFormData}>Cancel</Button>
+                                        <Button style='small' onClick={onSubmit}>Save and Create Invoice</Button>
+                                        <Link to={"/student-management"}>
+                                            <Button style='cancel' onClick={clearFormData} >Cancel</Button>
                                         </Link>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </main>
-                </div >
-            </div >
+                </div>
+            </div>
+
+            {/* ---------------------------------------------------CREATE INVOICE POP UP------------------------------------- */}
+            {invoiceWindow &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="edit-modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Create Invoice</h3>
+                                    <button onClick={handleCancelEdit} className="cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="invoiceNo">
+                                                Invoice No<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="invoiceNo"
+                                                name="invoiceNo"
+                                                className="form-disabled"
+                                                placeholder="IN-XXXXXXXXXXXX"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div >
+                                            <label className="form-input" htmlFor="invoice_date">
+                                                Invoice Date<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="invoice_date"
+                                                name="invoice_date"
+                                                className="form-date-select"
+                                                placeholder='Invoice Date'
+                                                value={invoiceFormData.invoice_date}
+                                                onChange={() => setInvoiceFormData({ invoice_date: value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="batch_code">
+                                                Batch Code<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="batch_code"
+                                                name="batch_code"
+                                                className="form-disabled"
+                                                readOnly
+                                                value={invoiceFormData.batch_code}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div >
+                                            <label className="form-input" htmlFor="studentId">
+                                                Student Name<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="studentId"
+                                                name="studentId"
+                                                className="form-disabled"
+                                                value={createdStudentName}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="paymentPlan">
+                                                Payment Type<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="paymentPlan"
+                                                name="paymentPlan"
+                                                className="form-disabled"
+                                                value={invoiceFormData.paymentPlan}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div>
+                                            <label className="form-input" htmlFor="payableAmount">
+                                                Payable amount<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="payableAmount"
+                                                name="payableAmount"
+                                                className="form-disabled"
+                                                value={invoiceFormData.totalPayable}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="amount">
+                                                Amount<sup className="text-red-600">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="amount"
+                                                name="amount"
+                                                className="form-disabled"
+                                                value={invoiceFormData.amount}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div>
+                                            <label className="form-input" htmlFor="balanceAmount">
+                                                Balance Amount
+                                            </label>
+                                            <input
+                                                readOnly
+                                                type="text"
+                                                id="balanceAmount"
+                                                name="balanceAmount"
+                                                className="form-disabled"
+                                                value={invoiceFormData.balanceAmount}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={handleCreateInvoice}>Create Invoice</Button>
+                                <Button style="cancel" onClick={handleCancelEdit}>Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </>
     )
 }
 
-export default AddStudent;
+export default AddStudent

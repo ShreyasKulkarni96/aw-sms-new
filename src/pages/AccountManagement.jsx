@@ -1,8 +1,6 @@
- import React, { useEffect, useState, useMemo } from 'react';
-
+import React, { useEffect, useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { useTable, useSortBy, usePagination } from 'react-table';
-
 import { GET_BATCH_DATA, GET_INVOICES } from '../constants/api';
 import jsPDF from "jspdf";
 import Button from '../components/Button';
@@ -11,8 +9,10 @@ import APIService from "../services/APIService";
 import TopHeader from '../components/TopHeader';
 import Logo from "../assets/images/logo.png";
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import { useLocation } from 'react-router-dom';
 
 const AccountManagement = () => {
+    // const location = useLocation();
     const [invoices, setInvoices] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [batchData, setBatchData] = useState([]);
@@ -30,6 +30,7 @@ const AccountManagement = () => {
         balanceAmount: ''
     })
 
+    // console.log(location.state.batchId)
     useEffect(() => {
         const isFormValid =
             formData.invoice_date &&

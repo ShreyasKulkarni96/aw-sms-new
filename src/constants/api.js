@@ -1,4 +1,5 @@
 export const ACADEMIC_YEAR_URL = '/academic-year';
+export const LOGIN_API = '/user/login';
 
 
 export const GET_INVOICES = '/invoices';
