@@ -26,7 +26,6 @@ const StudentManagement = () => {
         try {
             const { data } = await APIService.get(STUDENT_DETAILS);
             setStudents(data.data);
-            console.log(students)
         } catch (error) {
             if (error.response && error.response.data) {
                 toast.error(error.response.data?.message || 'Something Went Wrong');
@@ -130,7 +129,6 @@ const StudentManagement = () => {
 
             toast.success('Bulk students imported successfully.');
             fetchStudents();
-
             // Reset the file input field
             fileInput.value = null;
         } catch (err) {
@@ -280,7 +278,7 @@ const StudentManagement = () => {
                                 {/* ----------------BOTTOM CARD------------------- */}
                                 <div className='bottom-card h-[520px]'>
                                     <div className='card-header '>List of Students</div>
-                                    <div className='overflow-auto' style={{ maxHeight: '350px' }}>
+                                    <div className='overflow-auto' style={{ maxHeight: '450px' }}>
                                         <table id="studentList" className="table">
                                             <thead className='table-head'>
                                                 {headerGroups.map(headerGroup => (
@@ -288,6 +286,9 @@ const StudentManagement = () => {
                                                         {headerGroup.headers.map(column => (
                                                             <th className='th' {...column.getHeaderProps(column.getSortByToggleProps())}>
                                                                 {column.render('Header')}
+                                                                <span>
+                                                                    {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                                                                </span>
                                                             </th>
                                                         ))}
                                                     </tr>
@@ -313,11 +314,14 @@ const StudentManagement = () => {
 
                                 {/* -----------------------PAGINATION----------------------------- */}
                                 <div className='pagination-wrapper'>
-                                    <button className='pagination-button'>
+                                    <button onClick={() => previousPage()} disabled={!canPreviousPage} className='pagination-button'>
                                         Previous
                                     </button>
-                                    <span className='span-pagination'>Page </span>
-                                    <button className='pagination-button'>
+                                    <span className='span-pagination'>  Page{' '}
+                                        <strong>
+                                            {pageIndex + 1} of {page.length}
+                                        </strong>{' '}</span>
+                                    <button onClick={() => nextPage()} disabled={!canNextPage} className='pagination-button'>
                                         Next
                                     </button>
                                 </div>
