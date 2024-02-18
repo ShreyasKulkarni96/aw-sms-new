@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Sidebar from '../../components/Sidebar';
 import TopHeader from '../../components/TopHeader';
-import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { Link, useNavigate } from 'react-router-dom';
 import cities from '../../constants/cities.json';
-import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { toast } from 'react-toastify';
 import APIService from '../../services/APIService';
+import { useTable, useSortBy, usePagination } from 'react-table';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceRounded';
 
 const AddCampus = () => {
-    const spacesHeader = ['Type of space', 'Space Title', 'Space Capacity', 'Is Active', 'Action'];
+    const navigate = useNavigate();
+    const validEmailRegEx = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    const namePattern = /^[a-zA-Z .]{2,50}$/;
     const spaceTypes = [
         'traditional classroom',
         'digital classroom',
@@ -24,111 +26,183 @@ const AddCampus = () => {
         'foley',
         'film mix theater'
     ];
-
-    const initialFormData = {
-        facilityName: '',
-        contactPerson: '',
-        facilityAddress: '',
-        contactPersonEmail: '',
-        contactPersonNo: '',
-        city: '',
-    }
-    const initialSpaceData = [{
+    const [openSection, setOpenSection] = useState(null);
+    const [spaceData, setSpaceData] = useState({
         spaceId: '',
         typeOfSpace: '',
         spaceTitle: '',
         spaceCapacity: 0,
         isActive: 1
-    }]
-    const [mapSpace, setMapSpace] = useState([]);
-    const navigate = useNavigate();
-    const validEmailRegEx = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    const namePattern = /^[a-zA-Z .]{2,50}$/;
-    const [formData, setFormData] = useState(initialFormData);
-    const [spaceData, setSpaceData] = useState(initialSpaceData);
-    const [AddSpacesModal, setAddSpacesModal] = useState(false);
+    });
+    const [spaces, setSpaces] = useState([]);
+    const [formData, setFormData] = useState({
+        facilityName: '',
+        contactPerson: '',
+        facilityAddress: '',
+        contactPersonEmail: '',
+        contactPersonPhone: '',
+        city: ''
+    });
+
     const { facilityName, contactPerson, facilityAddress, contactPersonEmail, contactPersonPhone, city } = formData;
+    const { spaceTitle, spaceCapacity } = spaceData;
 
-    const onMutate = (e) => {
-        const targetId = e.target.id;
-
-        if (targetId.toLowerCase().includes('space')) {
-            if (targetId === 'spaceCapacity') e.target.value = +e.target.value;
-
-            // Map over the array and update the specific element
-            setSpaceData(prevState => prevState.map((space, index) => {
-
-                return { ...space, [targetId]: e.target.value };
-
-            }));
-            closeAddSpacesModal();
-        }
-
-
-        setFormData(prevState => ({ ...prevState, [targetId]: e.target.value }));
+    const handleSectionToggle = (section) => {
+        setOpenSection(openSection === section ? null : section);
     };
 
-    const openAddSpacesModal = () => {
-        setAddSpacesModal(true);
-    }
-
-    const closeAddSpacesModal = () => {
-        setAddSpacesModal(false);
-    }
-
-    const clearFormData = () => {
-        setFormData(initialFormData);
+    const handleAddSpaces = () => {
+        handleSectionToggle('addSpaces');
     }
 
     const onSubmit = async () => {
-
+        // Check if "name" is provided
         if (!facilityName) {
             toast.warn('Campus Name is required');
             return; // Don't proceed if it is not provided
         }
 
+        // Check if "facilityName" follows a valid format
         if (!namePattern.test(facilityName)) {
             toast.warn('Please enter a valid Campus Name');
             return; // Don't proceed if it doesn't match the pattern
         }
 
+        // Check if "name" is provided
         if (!contactPerson) {
             toast.warn('Campus Head Name is required');
             return; // Don't proceed if it is not provided
         }
+
+        // Check if "facilityName" follows a valid format
         if (!namePattern.test(contactPerson)) {
             toast.warn('Please enter a valid Campus Head Name');
             return; // Don't proceed if it doesn't match the pattern
         }
+
+        // Check if "Facility address" is provided and not empty
         if (!facilityAddress) {
             toast.warn('Current Address is required.');
             return; // Don't proceed if it's empty
         }
+
+        // Check if "email" is provided
         if (!contactPersonEmail) {
             toast.warn('Email is required');
             return; // Don't proceed if it is not provided
         }
+
+        // Check if "contactPersonEmail" follows a valid format
         if (!validEmailRegEx.test(contactPersonEmail)) {
             toast.warn('Email is invalid');
             return; // Don't proceed if it doesn't match the pattern
         }
 
+        //  Check if contactPersonPhone is valid
         const validMobileRegex = /^[6-9]\d{9}$/;
         if (!validMobileRegex.test(contactPersonPhone)) return toast.warn(' Phone No. is invalid');
 
+        // Check if "City" is provided
         if (!city) {
             toast.warn('City is required');
             return; // Don't proceed if it is not provided
         }
 
         await addNewCampus();
-        setSpaceData(initialSpaceData);
-        setFormData(initialFormData);
+        clearFormData();
+        setSpaces([]);
     }
 
-    const handleAddSpace = () => {
-        setMapSpace((prevMapSpace) => [...prevMapSpace, ...spaceData]);
+    const onMutate = (e) => {
+        const targetId = e.target.id;
+        if (targetId.toLowerCase().includes('space')) {
+            if (targetId === 'spaceCapacity') e.target.value = +e.target.value;
+            setSpaceData(prevState => ({ ...prevState, [targetId]: e.target.value }));
+        }
+        setFormData(prevState => ({ ...prevState, [targetId]: e.target.value }));
     }
+
+    const saveSpaces = () => {
+        spaceData.spaceId = Date.now().toString();
+        spaceData.isActive = 1;
+
+        // Check if "spaceTitle" is provided
+        if (!spaceTitle) {
+            toast.warn('Space Title is required');
+            return; // Don't proceed if it is not provided
+        }
+
+        // Check if "spaceCapacity" is provided
+        if (!spaceCapacity) {
+            toast.warn('Space Capacity is required');
+            return; // Don't proceed if it is not provided
+        }
+
+        setSpaces(prevState => [...prevState, spaceData]);
+        clearSpaceData();
+    }
+
+    const clearFormData = () => {
+        const clearedForm = {};
+        for (const key in formData) clearedForm[key] = '';
+        setFormData(clearedForm);
+    };
+
+    const clearSpaceData = () => {
+        const clearedForm = {};
+        for (const key in spaceData) clearedForm[key] = '';
+        setSpaceData(clearedForm);
+        handleSectionToggle(null);
+    };
+
+    const tableHeader = [
+        { Header: 'Serial No.', accessor: 'serialNo' },
+        { Header: 'Space ID', accessor: 'spaceId' },
+        { Header: 'Type of Space', accessor: 'typeOfSpace' },
+        { Header: 'Space Title', accessor: 'spaceTitle' },
+        { Header: 'Space Capacity', accessor: 'spaceCapacity' },
+        { Header: 'Is Active', accessor: 'isActive' },
+        {
+            Header: 'Action',
+            accessor: 'action',
+            Cell: ({ row }) => (
+                <>
+                    <button title="delete" onClick={() => handleDeleteSpace(row.original.id)}><DeleteRoundedIcon className='delete-icon text-gray-600' /></button>
+                </>
+            )
+        }
+    ]
+
+    const tableColumn = useMemo(() => tableHeader, []);
+
+    const addSpacesWithSerialNo = useMemo(() => {
+        return spaces.map((space, index) => {
+            return {
+                ...space,
+                serialNo: index + 1,
+            };
+        });
+    }, [spaces]);
+
+    const {
+        headerGroups,
+        getTableBodyProps,
+        page,
+        prepareRow,
+        canPreviousPage,
+        canNextPage,
+        previousPage,
+        nextPage,
+        state: { pageIndex }
+    } = useTable({
+        columns: tableColumn, data: addSpacesWithSerialNo
+    }, useSortBy, usePagination);
+
+    const handleDeleteSpace = spaceId => {
+        const filteredSpaces = spaces.filter(item => item.spaceId !== spaceId);
+        setSpaces(filteredSpaces);
+        clearSpaceData();
+    };
 
     const addNewCampus = async () => {
         try {
@@ -137,16 +211,12 @@ const AddCampus = () => {
             delete payload.typeOfSpace;
             delete payload.spaceCapacity;
             payload.contactPersonAddress = formData.facilityAddress;
-            payload.spaceDetails = spaceData;
+            payload.spaceDetails = spaces;
             const { data } = await APIService.post('/campus', payload);
             if (data.code === 201) toast.success('Campus Added Successfully');
             navigate('/campus-management');
-            setSpaceData(initialSpaceData);
-            setFormData(initialFormData)
         } catch (error) {
-            console.log(error);
-            setSpaceData(initialSpaceData);
-            setFormData(initialFormData)
+            setSpaces([]);
             if (error.response && error.response.data) {
                 return toast.error(error.response.data?.message || 'Something Went Wrong');
             }
@@ -154,24 +224,22 @@ const AddCampus = () => {
         }
     }
 
-
-
     return (
         <>
-            <div className="main-page">
+            <div className='main-page'>
                 <div>
                     <Sidebar />
                 </div>
                 <div className="main-page-content">
                     <TopHeader />
-
-                    <main className="main-div">
-                        <div className='grid'>
-                            <div className='col-span-12 mb-4'>
-                                <div className='w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white'>
-                                    <div className='flex justify-between mb-4'>
-                                        <div className='text-lg font-semibold text-gray-hover'>Add Campus</div>
-                                        <div>
+                    <main className='main'>
+                        <div className='main-grid'>
+                            <div className='page-content'>
+                                {/* ------------------------------TOP CARD----------------------------------- */}
+                                <div className='top-card'>
+                                    <div className='card-content'>
+                                        <div className='card-header'>Add Campus</div>
+                                        <div className='text-right'>
                                             <Link to='/campus-management'>
                                                 <Button style="small">
                                                     <KeyboardBackspaceRoundedIcon className='icons mr-1' />
@@ -180,90 +248,96 @@ const AddCampus = () => {
                                             </Link>
                                         </div>
                                     </div>
-                                    <div className='flex justify-between'>
+                                    <div className='card-content mt-2'>
                                         <div className="w-full">
-                                            <div className="mb-4 mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="facilityName">
-                                                    Campus Name<sup className="text-red-600">*</sup>
+                                            <div className="mr-4">
+                                                <label className="form-input" htmlFor="facilityName">
+                                                    Campus Name
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    name="facilityName"
                                                     id="facilityName"
-                                                    className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                                                    className="form-select"
                                                     placeholder="Campus Name"
+                                                    value={facilityName}
                                                     onChange={onMutate}
-                                                    value={formData.facilityName}
                                                 />
                                             </div>
                                         </div>
                                         <div className="w-full">
-                                            <div className="mb-4 mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="contactPerson">
-                                                    Campus Head Name <sup className="text-red-600">*</sup>
+                                            <div className="mr-4">
+                                                <label className="form-input" htmlFor="contactPerson">
+                                                    Campus Head Name<sup className="text-red-600">*</sup>
                                                 </label>
                                                 <input
                                                     type="text"
                                                     id="contactPerson"
-                                                    className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
-                                                    placeholder="Campus Head Name"
+                                                    name="contactPerson"
+                                                    className="form-select"
+                                                    placeholder='contactPerson'
+                                                    value={contactPerson}
                                                     onChange={onMutate}
-                                                    value={formData.contactPerson}
                                                 />
                                             </div>
                                         </div>
                                         <div className="w-full">
-                                            <div className="mb-4 mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="facilityAddress">
+                                            <div className="mr-4">
+                                                <label className="form-input" htmlFor="facilityAddress">
                                                     Address<sup className="text-red-600">*</sup>
                                                 </label>
                                                 <input
                                                     type="text"
                                                     id="facilityAddress"
-                                                    className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                                                    name="facilityAddress"
+                                                    className="form-select"
                                                     placeholder="Address"
+                                                    value={facilityAddress}
                                                     onChange={onMutate}
-                                                    value={formData.facilityAddress}
                                                 />
                                             </div>
                                         </div>
                                         <div className="w-full">
-                                            <div className="mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="contactPersonEmail">
+                                            <div>
+                                                <label className="form-input" htmlFor="selectStudent" id="contactPersonEmail">
                                                     Email<sup className="text-red-600">*</sup>
                                                 </label>
                                                 <input
-                                                    type="text"
+                                                    type="email"
                                                     id="contactPersonEmail"
-                                                    className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                                                    name="contactPersonEmail"
+                                                    className="form-select"
                                                     placeholder="Email"
                                                     onChange={onMutate}
-                                                    value={formData.contactPersonEmail}
+                                                    value={contactPersonEmail}
                                                 />
                                             </div>
                                         </div>
                                     </div>
-                                    <div className='flex justify-between mb-2'>
+                                    <div className='card-content mt-3'>
                                         <div className="w-full">
                                             <div className="mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="contactPersonPhone">
-                                                    Phone No<sup className="text-red-600">*</sup>
+                                                <label className="form-input" htmlFor="contactPersonPhone">
+                                                    Phone No
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    maxLength={10}
+                                                    name="contactPersonPhone"
                                                     id="contactPersonPhone"
-                                                    className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                                                    className="form-select"
                                                     placeholder="Phone No"
                                                     onChange={onMutate}
-                                                    value={formData.contactPersonNo}
+                                                    value={contactPersonPhone}
                                                 />
                                             </div>
                                         </div>
                                         <div className="w-full">
                                             <div className="mr-4">
-                                                <label className="block text-base font-medium text-gray-600" htmlFor="contactPersonPhone">
-                                                    Select City<sup className="text-red-600">*</sup>
+                                                <label className="form-input" htmlFor="city">
+                                                    Select City
                                                 </label>
-                                                <select id="city" className='w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400' onChange={onMutate} value={formData.city}>
+                                                <select id="city" className='form-select' onChange={onMutate} value={city}>
                                                     <option value={''}>---Select City---</option>
                                                     {cities.map((city) => (
                                                         <option value={city.name}>
@@ -273,57 +347,49 @@ const AddCampus = () => {
                                                 </select>
                                             </div>
                                         </div>
-                                        <div className="w-full flex h-1/4 mt-7">
-                                            <Button onClick={onSubmit} style='primary'>Save</Button>
+                                        <div className="w-full">
+                                        </div>
+                                        <div className="w-full mt-6 text-right">
+                                            <Button style='small' onClick={onSubmit}>Save</Button>
                                             <Button style='cancel' onClick={clearFormData}>Cancel</Button>
                                         </div>
-                                        <div className='w-full' />
                                     </div>
                                 </div>
-                                {/* -----------ADD SPACES--------- */}
-                                <div className='w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-4'>
-                                    <div className='flex justify-between mb-4'>
-                                        <div className='text-lg font-semibold text-gray-hover'>Add Spaces</div>
+                                {/* -------------------------------------ADD SPACES-------------------------------------- */}
+                                <div className='bottom-card h-[550px]'>
+                                    <div className='card-content mb-2'>
+                                        <div className='card-header'>Add Spaces</div>
                                         <div>
-                                            <Button style="small" onClick={openAddSpacesModal}>
+                                            <Button style="small" onClick={handleAddSpaces}>
                                                 Add Spaces
                                             </Button>
                                         </div>
                                     </div>
-
-                                    {/* ---------------LIST OF SPACES------------ */}
-                                    <div>
-                                        <table className='table-auto w-full border overflow-y-auto'>
-                                            <thead>
-                                                <tr>
-                                                    {spacesHeader.map((headers) => (
-                                                        <th className='border text-left bg-orange-600 p-2 text-base font-semibold' >
-                                                            {headers}
-                                                        </th>
-                                                    ))}
-                                                </tr>
+                                    <div className='overflow-auto' style={{ maxHeight: '500px' }}>
+                                        <table id='spaceList' className='table'>
+                                            <thead className='table-head'>
+                                                {headerGroups.map(headerGroup => (
+                                                    <tr {...headerGroup.getHeaderGroupProps()}>
+                                                        {headerGroup.headers.map(column => (
+                                                            <th className='th' {...column.getHeaderProps(column.getSortByToggleProps())}>
+                                                                {column.render('Header')}
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                ))}
                                             </thead>
-                                            <tbody className="overflow-y-auto">
-                                                {mapSpace.map((space, idx) => {
+                                            <tbody {...getTableBodyProps()}>
+                                                {page.map((row) => {
+                                                    prepareRow(row);
                                                     return (
-                                                        <tr key={space.spaceId || idx + 1}>
-                                                            <td className='border p-2 text-base'>{space.typeOfSpace}</td>
-                                                            <td className='border p-2 text-base'>{space.spaceTitle}</td>
-                                                            <td className='border p-2 text-base'>{space.spaceCapacity}</td>
-                                                            <td className='border p-2 text-base'>
-                                                                {' '}
-                                                                <span className={`badge rounded-pill bg-${space.isActive ? 'success' : 'danger'}`}>
-                                                                    {space.isActive ? 'YES' : 'NO'}
-                                                                </span>
-                                                            </td>
-                                                            <td className='border p-2 text-base'>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleDeleteSpace(space.spaceId)}
-                                                                >
-                                                                    <DeleteRoundedIcon className='delete-icon text-gray-600' />
-                                                                </button>
-                                                            </td>
+                                                        <tr {...row.getRowProps()}>
+                                                            {row.cells.map((cell) => {
+                                                                return (
+                                                                    <td className='td' {...cell.getCellProps()}>
+                                                                        {cell.render('Cell')}
+                                                                    </td>
+                                                                )
+                                                            })}
                                                         </tr>
                                                     )
                                                 })}
@@ -334,75 +400,90 @@ const AddCampus = () => {
                             </div>
                         </div>
                     </main>
-                </div >
+                </div>
             </div>
 
-
-            {/* --------------------------------------------MODAL FOR ADD SPACES------------------------------------------ */}
-            {AddSpacesModal &&
-                <div id='myModal' className='fixed inset-0 overflow-y-hidden'>
-                    <div className='flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
-                        <div className='fixed inset-0 bg-gray-500 opacity-75'></div>
-                        <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 ">
-                                <div className='flex justify-between items-center '>
-                                    <h3 className='text-lg font-semibold'>
-                                        Add Space
-                                    </h3>
-                                    <CloseRoundedIcon onClick={closeAddSpacesModal} />
+            {/* -------------------------------------------ADD SPACES MODAL-------------------------------------- */}
+            {openSection === 'addSpaces' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Add Spaces</h3>
+                                    <button onClick={clearSpaceData} className="edit-cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div className="bg-white px-4 pb-4 sm:p-6 sm:pb-4">
-                                    <div className="mb-4">
-                                        <label className="block text-base font-medium text-gray-600" htmlFor="typeOfSpace">
-                                            Select City<sup className="text-red-600">*</sup>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" id="typeOfSpace">
+                                            Select City<sup className="important">*</sup>
                                         </label>
-                                        <select id="typeOfSpace" className='w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400' onChange={onMutate}>
+                                        <select id="typeOfSpace" className='form-select' onChange={onMutate}>
                                             <option value={''}>Select Type of Space</option>
                                             {spaceTypes.map((type) => (
                                                 <option value={type}>
                                                     {type}</option>
                                             ))}
-
                                         </select>
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-base font-medium text-gray-600" htmlFor="spaceTitle">
-                                            Space Title<sup className="text-red-600">*</sup>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="spaceTitle">
+                                            Space Title<sup className="important">*</sup>
                                         </label>
                                         <input
                                             type="text"
+                                            name="spaceTitle"
                                             id="spaceTitle"
-                                            className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                                            className="form-select"
                                             placeholder="Space Title"
                                             onChange={onMutate}
-
                                         />
-
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-base font-medium text-gray-600" htmlFor="spaceCapacity">
-                                            Space / Capacity<sup className="text-red-600">*</sup>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="spaceCapacity">
+                                            Space / Capacity<sup className="important">*</sup>
                                         </label>
                                         <input
-                                            onChange={onMutate}
-                                            type="number"
+                                            type="text"
+                                            name="spaceCapacity"
                                             id="spaceCapacity"
-                                            className="w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
-                                            placeholder="Space Capacity"
-
+                                            className="form-select"
+                                            placeholder="Space / Capacity"
+                                            onChange={onMutate}
                                         />
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <Button style='small' onClick={handleAddSpace}>Save</Button>
-                                        <Button style='cancle' onClick={closeAddSpacesModal}>Close</Button>
                                     </div>
                                 </div>
                             </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style='small' onClick={saveSpaces}>Save</Button>
+                                <Button style='cancel' onClick={clearSpaceData}>Close</Button>
+                            </div>
                         </div>
                     </div>
-                </div >
+                </div>
             }
-
         </>
     )
 }

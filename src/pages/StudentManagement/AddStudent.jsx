@@ -390,14 +390,11 @@ const AddStudent = () => {
 
         try {
             const { data } = await APIService.post('/student-details', studentDetails);
-
-
             if (data.code === 201) {
                 setDataAndState(data);
                 createInvoice();
                 toast.success('Student Enrolled Successfully');
             }
-
             clearFormData();
         } catch (error) {
             clearFormData();
@@ -453,7 +450,6 @@ const AddStudent = () => {
     }
 
     useEffect(() => {
-        const totalFeesValue = parseFloat(totalFees);
         const paidFeesValue = parseFloat(paidFees);
         const balanceAmountValue = totalPayable - paidFeesValue;
 

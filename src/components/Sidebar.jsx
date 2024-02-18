@@ -18,27 +18,12 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 
 const Sidebar = () => {
-    const [toggleStudentList, setToggleStudentList] = useState(false);
-    const [toggleCampusList, setToggleCampusList] = useState(false);
-    const [toggleProgramList, setToggleProgramList] = useState(false);
+    const [openSection, setOpenSection] = useState(null);
 
-    const onToggleStudentList = () => {
-        setToggleStudentList(!toggleStudentList);
-        setToggleProgramList(false);
-        setToggleCampusList(false);
-    }
+    const handleSectionToggle = (section) => {
+        setOpenSection(openSection === section ? null : section);
+    };
 
-    const onToggleCampusList = () => {
-        setToggleCampusList(!toggleCampusList);
-        setToggleProgramList(false);
-        setToggleStudentList(false);
-    }
-
-    const onToggleProgramList = () => {
-        setToggleProgramList(!toggleProgramList);
-        setToggleStudentList(false);
-        setToggleCampusList(false);
-    }
 
     return (
         <>
@@ -61,28 +46,28 @@ const Sidebar = () => {
                                 />
                             </li>
 
-                            <div className="my-6 bg-gray-700 h-[1px]"></div>
+                            <div className="my-4 bg-gray-700 h-[1px]"></div>
 
-                            {/* Dashboard */}
-                            <Link>
+                            {/* ---------------------DASHBOARD----------------------- */}
+                            <Link to="/dashboard">
                                 <li className='list'>
                                     <div className="list-items">
-                                        <DashboardCustomizeRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className="list-name ml-6">Dashboard</span>
+                                        <DashboardCustomizeRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className="list-name ml-4">Dashboard</span>
                                     </div>
                                 </li>
                             </Link>
 
-                            {/* Student Management */}
+                            {/*-------------------STUDENT MANAGEMENT------------------*/}
                             <div>
                                 <li className='list-dropdown'>
-                                    <div onClick={onToggleStudentList} className="list-items-dropdown">
-                                        <GroupRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name'>Student Management</span>
-                                        {toggleStudentList ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
+                                    <div onClick={() => handleSectionToggle('studentManagement')} className="list-items-dropdown">
+                                        <GroupRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-3'>Student Management</span>
+                                        {openSection === "studentManagement" ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
                                     </div>
                                 </li>
-                                <ul className={`ml-8 ${toggleStudentList ? 'block' : 'hidden'}`}>
+                                <ul className={`ml-8 ${openSection === "studentManagement" ? 'block' : 'hidden'}`}>
                                     <Link to="/student-management">
                                         <li className='sublist'>
                                             <span className="list-name ml-5">Manage Student</span>
@@ -96,16 +81,16 @@ const Sidebar = () => {
                                 </ul>
                             </div>
 
-                            {/* Campus Management */}
+                            {/*-------------------------CAMPUS MANAGEMENT------------------------------*/}
                             <div>
                                 <li className='list-dropdown'>
-                                    <div className="list-items-dropdown" onClick={onToggleCampusList} >
-                                        <ApartmentRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name'>Campus Management</span>
-                                        {toggleCampusList ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
+                                    <div className="list-items-dropdown" onClick={() => handleSectionToggle('campusManagement')} >
+                                        <ApartmentRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-3'>Campus Management</span>
+                                        {openSection === "campusManagement" ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
                                     </div>
                                 </li>
-                                <ul className={`ml-8 ${toggleCampusList ? 'block' : 'hidden'}`}>
+                                <ul className={`ml-8 ${openSection === "campusManagement" ? 'block' : 'hidden'}`}>
                                     <Link to="/campus-management">
                                         <li className='sublist'>
                                             <span className="list-name ml-5">Manage Campus</span>
@@ -114,16 +99,16 @@ const Sidebar = () => {
                                 </ul>
                             </div>
 
-                            {/* Program Management */}
+                            {/* -----------------------PROGRAM MANAGEMENT---------------------------------------- */}
                             <div>
                                 <li className='list-dropdown'>
-                                    <div className="list-items-dropdown" onClick={onToggleProgramList} >
-                                        <InventoryRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-2'>Program Management</span>
-                                        {toggleProgramList ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
+                                    <div className="list-items-dropdown" onClick={() => handleSectionToggle('programManagement')} >
+                                        <InventoryRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-3'>Program Management</span>
+                                        {openSection === "programManagement" ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
                                     </div>
                                 </li>
-                                <ul className={`ml-8 ${toggleProgramList ? 'block' : 'hidden'}`}>
+                                <ul className={`ml-8 ${openSection === "programManagement" ? 'block' : 'hidden'}`}>
                                     <Link to="/program-management">
                                         <li className='sublist'>
                                             <span className="list-name ml-5">Manage Program</span>
@@ -147,60 +132,61 @@ const Sidebar = () => {
                                 </ul>
                             </div>
 
-                            {/* Faculty Management */}
+                            {/* ----------------------FACULTY MANAGEMENT----------------------------------------- */}
                             <Link to="/faculty-management">
                                 <li className='list'>
                                     <div className="list-items">
-                                        <BadgeRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-6'>Faculty Management</span>
+                                        <BadgeRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Faculty Management</span>
                                     </div>
                                 </li>
                             </Link>
 
-                            {/* Schedule Management */}
+                            {/* ----------------------SCHEDULE MANAGEMENT------------------------------------------ */}
                             <Link to='/schedule-management'>
                                 <li className='list'>
                                     <div className="list-items">
-                                        <EditCalendarRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-6'>Schedule Management</span>
+                                        <EditCalendarRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Schedule Management</span>
                                     </div>
                                 </li>
                             </Link>
 
-                            {/* Account Management */}
+                            {/* -----------------------ACCOUNT MANAGEMENT------------------------- */}
                             <Link to='/account-management'>
                                 <li className='list'>
                                     <div className="list-items">
-                                        <AccountBalanceRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-6'>Account Management</span>
+                                        <AccountBalanceRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Account Management</span>
                                     </div>
                                 </li>
                             </Link>
 
+                            {/* ---------------------------------LEAVE MANAGEMENT----------------------------- */}
                             <Link to='/leave-management'>
                                 <li className='list'>
                                     <div className="list-items">
-                                        <ThreePRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-6'>Leave Management</span>
+                                        <ThreePRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Leave Management</span>
                                     </div>
                                 </li>
                             </Link>
 
-                            {/* Academic Year Management */}
+                            {/* -----------------------ACADEMIC YEAR MANAGEMENT--------------------------*/}
                             <Link to='/academicyear-management'>
                                 <li className='list'>
                                     <div className="list-items">
-                                        <CalendarMonthRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                        <span className='list-name ml-6'>Academic Year Management</span>
+                                        <CalendarMonthRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Academic Year Management</span>
                                     </div>
                                 </li>
                             </Link>
 
-                            {/* Logout */}
+                            {/* --------------------------LOGOUT---------------------*/}
                             <li className='list'>
                                 <div className="list-items">
-                                    <LogoutRoundedIcon className='icons' style={{ fontSize: '20px' }} />
-                                    <span className='list-name ml-6'>Logout</span>
+                                    <LogoutRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                    <span className='list-name ml-4'>Logout</span>
                                 </div>
                             </li>
                         </ul>

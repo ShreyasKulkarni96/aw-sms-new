@@ -156,7 +156,7 @@ const StudentManagement = () => {
                                 {/* -------------TOP CARD---------------- */}
                                 <div className='top-card'>
                                     <div className='card-content'>
-                                        <div className='card-header'>Add Students</div>
+                                        <div className='card-header'>Student Management</div>
                                         <div>
                                             <Link to="/add-student">
                                                 <Button style='small'>Enroll New Student</Button>

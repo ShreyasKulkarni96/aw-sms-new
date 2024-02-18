@@ -23,6 +23,19 @@ body {
     0rem 0.4375rem 0.625rem -0.3125rem;
 }
 
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar for WebKit browsers */
+  }
+
+  /* Optional: Hide scrollbar for Firefox */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    /* Firefox */
+  }
+}
+
 /* ---------------------------------------------ICON STYLES------------------------------------------- */
 
 .icon-style {
@@ -80,6 +93,10 @@ body {
 
 .edit-modal-content {
   @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full
+}
+
+.show-details-model {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full
 }
 
 .light-divider {
@@ -228,15 +245,15 @@ body {
 /* --------------------------------------------SIDEBAR STYLE--------------------------------------------- */
 
 .sidebar {
-  @apply h-full w-[280px] bg-gray-main duration-[0.5s] ease-[ease] px-6 py-1.5 left-0 top-0
+  @apply min-h-screen w-[300px] bg-gray-main duration-[0.5s] ease-[ease] px-6 py-1.5 left-0 top-0 overflow-y-scroll scrollbar-hide
 }
 
 .sidebar-logo {
-  @apply p-2.5 flex items-center h-24 w-48
+  @apply p-2 flex items-center h-16 w-48
 }
 
 .divider {
-  @apply my-1 bg-gray-700 h-[1px]
+  @apply bg-gray-700 h-[1px] mt-2
 }
 
 .icons {
@@ -244,11 +261,11 @@ body {
 }
 
 .sidebar-menu {
-  @apply mt-6
+  @apply mt-4
 }
 
 .list-search {
-  @apply mt-3 duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex items-center justify-center p-2 shadow-lg bg-gray-600
+  @apply duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex items-center justify-center p-2 shadow-lg bg-gray-600
 }
 
 .search-input {
@@ -256,7 +273,7 @@ body {
 }
 
 .list {
-  @apply mt-2 duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex items-center justify-center p-2 hover:rounded-xl
+  @apply mt-1 duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex items-center justify-center p-2 hover:rounded-xl
 }
 
 .list-items {
@@ -264,11 +281,11 @@ body {
 }
 
 .list-name {
-  @apply text-[12px] tracking-wider font-semibold text-white
+  @apply text-[16px] font-semibold text-white tracking-wide
 }
 
 .list-dropdown {
-  @apply mt-2 duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex flex-col items-start justify-center p-2 hover:rounded-xl
+  @apply mt-1 duration-300 ease-linear cursor-pointer hover:bg-gray-hover rounded-3xl flex flex-col items-start justify-center p-2 hover:rounded-xl
 }
 
 .list-items-dropdown {
@@ -276,7 +293,7 @@ body {
 }
 
 .sublist {
-  @apply mt-2 cursor-pointer hover:bg-gray-hover p-2 rounded-3xl hover:rounded-xl duration-300
+  @apply mt-1 cursor-pointer hover:bg-gray-hover p-2 rounded-3xl hover:rounded-xl duration-300
 }
 
 /* ---------------------------------------------TOPHEADER STYLES------------------------------------------- */
@@ -330,7 +347,7 @@ body {
 }
 
 .main-page-content {
-  @apply flex-1 flex-col h-screen overflow-hidden
+  @apply flex-1 flex-col h-screen
 }
 
 .main {
@@ -343,18 +360,6 @@ body {
 
 .page-content {
   @apply h-full m-2 p-6
-}
-
-.card-1 {
-  @apply w-[250px] h-[200px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
-}
-
-.card-2 {
-  @apply w-[1080px] h-[450px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
-}
-
-.card-3 {
-  @apply w-[550px] h-[325px] border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
 }
 
 .top-card {

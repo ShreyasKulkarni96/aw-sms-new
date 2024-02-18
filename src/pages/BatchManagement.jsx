@@ -1,41 +1,44 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import Button from '../components/Button';
+import Button from "../components/Button";
 import Sidebar from '../components/Sidebar';
 import TopHeader from '../components/TopHeader';
+import { toast } from 'react-toastify';
 import APIService from '../services/APIService';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import BorderColorRoundedIcon from '@mui/icons-material/BorderColorRounded';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import DeleteModal from '../components/shared/DeleteModal';
+import { format, subDays, subYears, isDate } from 'date-fns';
 
 const BatchManagement = () => {
-    const [academicYears, setAcademicYears] = useState([]);
-    const [programs, setPrograms] = useState([]);
-    const [batches, setBatches] = useState([]);
+
     const [batchId, setBatchId] = useState();
+    const [batches, setBatches] = useState([]);
+    const [programs, setPrograms] = useState([]);
+    const [openSection, setOpenSection] = useState(null);
+    const [academicYears, setAcademicYears] = useState([]);
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [isEditModalOpen, setEditModalOpen] = useState(false);
-    const [addCoreOpen, setAddCoreOpen] = useState(false);
-    const [addElectiveOpen, setAddElectiveOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        academicYearId: '',
-        coreBatchCode: 'DSE/A/0108/MUM/23-24',
-        electiveBatchCode: 'DSE/B/0108/MUM/23-24',
-        type: '',
-        startDate: '',
-        endDate: '',
-        capacity: ''
-    });
-    const [editBatchData, setEditBatchData] = useState({
+    const initialEditData = {
         batchCode: '',
         capacity: '',
         startDate: '',
         endDate: '',
         programId: '',
         academicYearId: '',
-        description: ''
-    });
-
+        description: '',
+        type: ''
+    };
+    const [editBatchData, setEditBatchData] = useState(initialEditData);
+    const initialFormData = {
+        academicYearId: '',
+        coreBatchCode: 'DSE/A/0108/MUM/23-24',
+        electiveBatchCode: 'DSE/B/0108/MUM/23-24',
+        type: '',
+        startDate: format(new Date(), 'yyyy-MM-dd'),
+        endDate: format(new Date(), 'yyyy-MM-dd'),
+        capacity: ''
+    }
+    const [formData, setFormData] = useState(initialFormData);
     const { capacity, startDate, endDate } = formData;
 
     useEffect(() => {
@@ -67,19 +70,21 @@ const BatchManagement = () => {
 
     const fetchBatches = async () => {
         try {
-            const url = `/batch`;
-            const { data } = await APIService.get(url);
+            const { data } = await APIService.get(`/batch`);
             setBatches(data.data);
         } catch (error) {
             toast.error('Some Error occurred while fetching batches');
         }
     };
 
-    const onMutate = async e => {
-        setFormData(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
-    };
+    // function formatDate(inputDate) {
+    //     const [day, month, year] = inputDate.split("-");
+    //     return `${year}-${month}-${day}`;
+    // }
+
 
     const tableHeader = [
+        { Header: 'Serial No', accessor: 'serialNo' },
         { Header: 'ID', accessor: 'id' },
         { Header: 'Batch', accessor: 'batchCode' },
         { Header: 'Program Code', accessor: 'programId' },
@@ -101,6 +106,15 @@ const BatchManagement = () => {
 
     const tableColumn = useMemo(() => tableHeader, []);
 
+    const batchWithSerialNo = useMemo(() => {
+        return batches.map((batch, index) => {
+            return {
+                ...batch,
+                serialNo: index + 1,
+            };
+        });
+    }, [batches]);
+
     const {
         headerGroups,
         getTableProps,
@@ -112,8 +126,9 @@ const BatchManagement = () => {
         previousPage,
         nextPage,
         state: { pageIndex }
-    } = useTable({ columns: tableColumn, data: batches }, useSortBy, usePagination);
+    } = useTable({ columns: tableColumn, data: batchWithSerialNo }, useSortBy, usePagination);
 
+    // DELETE MODAL FUNCTIONALITY
     const handleDeleteConfirmation = (id) => {
         setBatchId(id);
         setDeleteModalOpen(true);
@@ -140,21 +155,28 @@ const BatchManagement = () => {
         setDeleteModalOpen(false);
     }
 
-    const handleEditModal = (rowData) => {
-        setEditModalOpen(true); // Open the modal
-        setEditBatchData({ ...rowData }); // Assign the data to editBatchData
-    }
-
-    const handleCancelEdit = () => {
-        setEditModalOpen(!isEditModalOpen)
+    // EDIT MODAL FUNCTIONALITY
+    const handleEditModal = (data) => {
+        setOpenSection('editBatch');
+        setEditBatchData((prevData) => ({
+            ...prevData,
+            batchCode: data.batchCode,
+            capacity: data.capacity,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            programId: data.programId,
+            academicYearId: data.academicYearId,
+            description: data.description,
+            type: data.type
+        }))
     }
 
     const handleEditInputChange = (field, value) => {
-        setEditBatchData(prevState => ({
-            ...prevState,
+        setEditBatchData((prevData) => ({
+            ...prevData,
             [field]: value
-        }));
-    };
+        }))
+    }
 
     const updateBatch = async () => {
         try {
@@ -173,11 +195,9 @@ const BatchManagement = () => {
                 toast.warn('Please enter End Date.');
                 return; // Don't proceed if it's not a valid date
             }
-
             if (editBatchData.startDate > editBatchData.endDate) {
                 return toast.warn('Start Date cannot be greater than End Date.');
             }
-
             // Check if "programId" is provided
             if (!editBatchData.programId) {
                 toast.warn('Program is required.');
@@ -188,8 +208,6 @@ const BatchManagement = () => {
                 toast.warn('Academic Year is required.');
                 return; // Don't proceed if it's not provided
             }
-            // Delete the properties you want to remove from editBatchData
-            delete editBatchData.academicYear;
             delete editBatchData.enrolled;
             delete editBatchData.isActive;
             delete editBatchData.updatedAt;
@@ -198,9 +216,9 @@ const BatchManagement = () => {
             const { data } = await APIService.patch(`/batch/${editBatchData.id}`, editBatchData);
             if (data.code === 200) {
                 toast.success('Batch Details Updated Successfully');
+                setEditBatchData(initialEditData);
                 await fetchBatches();
             }
-            // You can uncomment setIsLoading(false) if needed
         } catch (error) {
             console.log(error);
             if (error.response && error.response.data) {
@@ -209,39 +227,23 @@ const BatchManagement = () => {
                 toast.error('Temporarily Unable to Update Batch Details');
             }
         }
-    };
-
-    const handleAddCoreBatch = () => {
-        setAddCoreOpen(true)
     }
 
-    const handleAddElectiveBatch = () => {
-        setAddElectiveOpen(true)
+    const handleCancleEditModal = () => {
+        setOpenSection(null);
+        setEditBatchData(initialEditData);
     }
 
-    const clearFormData = () => {
-        if (setAddCoreOpen) setAddCoreOpen(false);
-        if (setAddElectiveOpen) setAddElectiveOpen(false);
-        const clearedForm = {};
-        for (const key in formData) {
-            if (key.toLowerCase().includes('code')) {
-                clearedForm[key] = formData[key];
-                continue;
-            }
-            clearedForm[key] = '';
-        }
-        setFormData({
-            academicYearId: '',
-            coreBatchCode: 'DSE/A/0108/MUM/23-24',
-            electiveBatchCode: 'DSE/B/0108/MUM/23-24',
-            type: '',
-            startDate: '',
-            endDate: '',
-            capacity: ''
-        })
-    };
+    const handleCanclePopUp = () => {
+        setOpenSection(null);
+    }
 
-    const onSubmit = async batchType => {
+    const onMutate = e => {
+        setFormData(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
+    };
+    console.log(formData);
+
+    const onSubmit = async (batchType) => {
         // Validate that the academicYearId is not empty
         if (!formData.academicYearId) {
             // Display a validation warning message if it's empty
@@ -264,18 +266,15 @@ const BatchManagement = () => {
             toast.warn('Please enter End Date.');
             return; // Don't proceed if it's not a valid date
         }
-
         if (startDate > endDate) {
             return toast.warn('Start Date cannot be greater than End Date.');
         }
-
         // Check if capacity is empty
         if (!formData.capacity) {
             // Display a validation warning message if it's empty
             toast.warn('Capacity cannot be empty');
             return;
         }
-
         const capacityValue = parseInt(formData.capacity);
         // eslint-disable-next-line
         if (isNaN(capacityValue) || capacityValue != formData.capacity) {
@@ -283,7 +282,6 @@ const BatchManagement = () => {
             toast.warn('Please enter a valid integer value for capacity');
             return;
         }
-
         formData.type = batchType;
 
         // 2.) Hit the API;
@@ -295,7 +293,7 @@ const BatchManagement = () => {
             setBatches([...batches, newBatch]);
             clearFormData();
         }
-    };
+    }
 
     const addBatch = async formData => {
         try {
@@ -309,18 +307,27 @@ const BatchManagement = () => {
             payload.programId = formData.programId * 1;
             payload.academicYearId = formData.academicYearId * 1;
             const { data } = await APIService.post(`/batch`, payload);
-            // setIsLoading(false);
+            clearFormData();
             return data.data;
         } catch (error) {
-            console.log(error);
             if (error.response && error.response.data) {
                 toast.error(error.response.data?.message || 'Something Went Wrong');
                 return false;
             }
-            // setIsLoading(false);
             toast.error('Temporarily Unable to Add Session');
-            return false;
         }
+    }
+    const clearFormData = () => {
+        const clearedForm = {};
+        for (const key in formData) {
+            if (key.toLowerCase().includes('code')) {
+                clearedForm[key] = formData[key];
+                continue;
+            }
+            clearedForm[key] = '';
+        }
+        setFormData(initialFormData);
+        setOpenSection(null);
     };
 
     const filterBatches = async e => {
@@ -369,10 +376,10 @@ const BatchManagement = () => {
                     <main className='main'>
                         <div className='main-grid'>
                             <div className='page-content'>
-                                {/* --------------TOP CARD--------------- */}
+                                {/* -----------------------------------TOP CARD--------------------------------- */}
                                 <div className='top-card '>
                                     <div className='card-content'>
-                                        <div className='card-header'>Create Batch</div>
+                                        <div className='card-header'>Batch Management</div>
                                     </div>
                                     <div className='card-content'>
                                         <div className="w-full">
@@ -384,16 +391,22 @@ const BatchManagement = () => {
                                                     className='form-select'
                                                     name="academicYear"
                                                     id="academicYear"
+                                                    onChange={filterBatches}
                                                 >
-                                                    <option value=''>
-                                                        Select Academic Year
-                                                    </option>
+                                                    <option value={0}>Select Academic Year</option>
+                                                    {academicYears.map(ay => {
+                                                        return (
+                                                            <option key={ay.id} value={ay.id}>
+                                                                {ay.name}
+                                                            </option>
+                                                        );
+                                                    })}
                                                 </select>
                                             </div>
                                         </div>
                                         <div className="w-full">
                                             <div className="mr-4">
-                                                <label className="form-input" htmlFor="programType">
+                                                <label className="form-input" htmlFor="programType" onChange={filterBatches}>
                                                     Select Program Type
                                                 </label>
                                                 <select
@@ -401,9 +414,9 @@ const BatchManagement = () => {
                                                     name="programType"
                                                     id="programType"
                                                 >
-                                                    <option value=''>
-                                                        Select Program Type
-                                                    </option>
+                                                    <option value={''}>Select Program Type </option>
+                                                    <option value={'core'}>Core Program</option>
+                                                    <option value={'elective'}>Elective Program</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -416,21 +429,27 @@ const BatchManagement = () => {
                                                     className='form-select'
                                                     name="program"
                                                     id="program"
+                                                    onChange={filterBatches}
                                                 >
-                                                    <option value=''>
-                                                        Select Program
-                                                    </option>
+                                                    <option value={''}>Select Program / Elective </option>
+                                                    {programs.map(item => {
+                                                        return (
+                                                            <option key={item.id} value={item.id}>
+                                                                {item.programName}
+                                                            </option>
+                                                        );
+                                                    })}
                                                 </select>
                                             </div>
                                         </div>
                                         <div className="w-full mt-6 text-center">
-                                            <Button style="small" onClick={handleAddCoreBatch}>Add Core batch</Button>
-                                            <Button style="small" onClick={handleAddElectiveBatch}>Add Elective batch</Button>
+                                            <Button style="small" onClick={() => setOpenSection('core')}>Add Core batch</Button>
+                                            <Button style="small" onClick={() => setOpenSection('elective')}>Add Elective batch</Button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* ------------------BOTTOM CARD------------- */}
+                                {/* -------------------------------------BOTTOM CARD------------------------------------------- */}
                                 <div className='bottom-card h-[600px]'>
                                     <div className='card-header'>List of Batches</div>
                                     <div className=' overflow-y-auto' style={{ maxHeight: '350px' }}>
@@ -441,6 +460,9 @@ const BatchManagement = () => {
                                                         {headerGroup.headers.map(column => (
                                                             <th className='th'{...column.getHeaderProps(column.getSortByToggleProps())}>
                                                                 {column.render('Header')}
+                                                                <span>
+                                                                    {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                                                                </span>
                                                             </th>
                                                         ))}
                                                     </tr>
@@ -469,422 +491,231 @@ const BatchManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* ------Pagination------ */}
+                                {/* -------------------------------------PAGINATION-----------------------------------------------*/}
                                 <div className='pagination-wrapper'>
-                                    <button onClick={() => previousPage()} className='pagination-button'>
+                                    <button onClick={() => previousPage()} disabled={!canPreviousPage} className='pagination-button'>
                                         Previous
                                     </button>
-                                    <span className='span-pagination'>Page {pageIndex + 1} of {page.length}</span>
-                                    <button onClick={() => nextPage()} className='pagination-button'>
-                                        back
+                                    <span className='span-pagination'>  Page{' '}
+                                        <strong>
+                                            {pageIndex + 1} of {page.length}
+                                        </strong>{' '}</span>
+                                    <button onClick={() => nextPage()} disabled={!canNextPage} className='pagination-button'>
+                                        Next
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </main>
                 </div>
-            </div >
+            </div>
 
-            {/* ---------------- MODAL POP UP CORE BATCH------------------- */}
-            {addCoreOpen ? <div className='modal-open'>
-                <div className="modal-wrapper">
-                    <div className="modal-opacity">
-                        <div className="modal-op"></div>
-                    </div>
-                    <div className="modal-content">
-                        <div className="modal-title-content">
-                            <div className="modal-title-wrapper">
-                                <h3 className="modal-title">Add Core Batch</h3>
-                                <button onClick={clearFormData} className="edit-cancel-button">
-                                    <svg
-                                        className="w-6 h-6"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
+            {/* -------------------------------------------------MODAL POP UP FOR EDIT------------------------------------------------- */}
+            {openSection === 'editBatch' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
                         </div>
-                        <div className="modal-section">
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="academicYearId">
-                                        Academic Year<sup className="important">*</sup>
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        id="academicYearId"
-                                        onChange={onMutate}
-                                    >
-                                        <option value="">---Select Academic Year---</option>
-                                        {academicYears.map(ay => {
-                                            return (
-                                                <option key={ay.id} value={ay.id}>
-                                                    {ay.name}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="programId">
-                                        Select Program<sup className="important">*</sup>
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        id="programId"
-                                        onChange={onMutate}
-                                    >
-                                        <option value={''}>Select Program</option>
-                                        {programs.map(program => {
-                                            return (
-                                                <option key={program.id} value={program.id}>
-                                                    {program.programName}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="batchCode">
-                                        Batch Code<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="batchCode"
-                                        name="batchCode"
-                                        className="form-disabled"
-                                        value={formData.coreBatchCode}
-                                        disabled
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="startDate">
-                                        Start Date<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="startDate"
-                                        name="startDate"
-                                        value={startDate}
-                                        className="form-select"
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="endDate">
-                                        End Date<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="endDate"
-                                        name="endDate"
-                                        className="form-select"
-                                        value={endDate}
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="capacity">
-                                        Capacity<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        min={1}
-                                        type="text"
-                                        id="capacity"
-                                        name="capacity"
-                                        className="form-select"
-                                        value={capacity}
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="light-divider"></div>
-                        <div className='modal-button'>
-                            <Button style="small" onClick={() => onSubmit('core')}>Save</Button>
-                            <Button style="cancel" onClick={clearFormData}>Cancel</Button>
-                        </div>
-                    </div>
-                </div>
-            </div> : ''}
-
-            {/* ---------------- MODAL POP UP CORE BATCH------------------- */}
-            {addElectiveOpen ? <div className='modal-open'>
-                <div className="modal-wrapper">
-                    <div className="modal-opacity">
-                        <div className="modal-op"></div>
-                    </div>
-                    <div className="modal-content">
-                        <div className="modal-title-content">
-                            <div className="modal-title-wrapper">
-                                <h3 className="modal-title">Add Elective Batch</h3>
-                                <button onClick={clearFormData} className="edit-cancel-button">
-                                    <svg
-                                        className="w-6 h-6"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="academicYearId">
-                                        Academic Year<sup className="important">*</sup>
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        id="academicYearId"
-                                        onChange={onMutate}
-                                    >
-                                        <option value="">---Select Academic Year---</option>
-                                        {academicYears.map(ay => {
-                                            return (
-                                                <option key={ay.id} value={ay.id}>
-                                                    {ay.name}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="programId">
-                                        Select Program<sup className="important">*</sup>
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        id="programId"
-                                        onChange={onMutate}
-                                    >
-                                        <option value={''}>Select Program</option>
-                                        {programs.map(program => {
-                                            return (
-                                                <option key={program.id} value={program.id}>
-                                                    {program.programName}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="batchCode">
-                                        Batch Code<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="batchCode"
-                                        name="batchCode"
-                                        className="form-disabled"
-                                        value={formData.electiveBatchCode}
-                                        disabled
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="startDate">
-                                        Start Date<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="startDate"
-                                        name="startDate"
-                                        className="form-select"
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="endDate">
-                                        End Date<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="endDate"
-                                        name="endDate"
-                                        className="form-select"
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                            <div className='card-content mt-3'>
-                                <div className="w-full">
-                                    <label className="form-input" htmlFor="capacity">
-                                        Capacity<sup className="important">*</sup>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="capacity"
-                                        name="capacity"
-                                        className="form-select"
-                                        value={capacity}
-                                        onChange={onMutate}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="light-divider"></div>
-                        <div className='modal-button'>
-                            <Button style="small" onClick={() => onSubmit('elective')}>Save</Button>
-                            <Button style="cancel" onClick={clearFormData}>Cancel</Button>
-                        </div>
-                    </div>
-                </div>
-            </div> : ''}
-
-            {/* --------------EDIT MODAL POP UP--------------- */}
-            {isEditModalOpen ? <div className='modal-open'>
-                <div className="modal-wrapper">
-                    <div className="modal-opacity">
-                        <div className="modal-op"></div>
-                    </div>
-                    <div className="edit-modal-content">
-                        <div className="modal-title-content">
-                            <div className="modal-title-wrapper">
-                                <h3 className="modal-title">Edit Details</h3>
-                                <button onClick={handleCancelEdit} className="cancel-button">
-                                    <svg
-                                        className="w-6 h-6"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <div className='card-content mt-2'>
-                                <div className="w-full">
-                                    <div className="mr-4">
-                                        <label className="form-input" htmlFor="batchCode">
-                                            Batch Code<sup className="important">*</sup>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="batchCode"
-                                            name="batchCode"
-                                            className="form-disabled"
-                                            placeholder='Batch Code'
-                                            value={editBatchData.batchCode}
-                                            readOnly
-                                        />
-                                    </div>
-                                </div>
-                                <div className="w-full">
-                                    <div >
-                                        <label className="form-input" htmlFor="capacity">
-                                            Capacity<sup className="important">*</sup>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="capacity"
-                                            name="capacity"
-                                            className="form-select"
-                                            placeholder='Capacity'
-                                            value={editBatchData.capacity}
-                                            onChange={e => handleEditInputChange('capacity', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='card-content mt-2'>
-                                <div className="w-full">
-                                    <div className="mr-4">
-                                        <label className="form-input" htmlFor="startDate">
-                                            Start Date<sup className="important">*</sup>
-                                        </label>
-                                        <input
-                                            type="date"
-                                            id="startDate"
-                                            name="startDate"
-                                            className="form-select"
-                                            value={editBatchData.startDate}
-                                            onChange={e => handleEditInputChange('startDate', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="w-full">
-                                    <div >
-                                        <label className="form-input" htmlFor="endDate">
-                                            End Date<sup className="important">*</sup>
-                                        </label>
-                                        <input
-                                            type="date"
-                                            id="endDate"
-                                            name="endDate"
-                                            className="form-select"
-                                            value={editBatchData.endDate}
-                                            onChange={e => handleEditInputChange('endDate', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='card-content mt-2'>
-                                <div className="w-full">
-                                    <div className="mr-4">
-                                        <label className="form-input" htmlFor="programId">
-                                            Select Program<sup className="important">*</sup>
-                                        </label>
-                                        <select
-                                            className="form-select"
-                                            id="programId"
-                                            value={editBatchData.programId}
-                                            onChange={e => handleEditInputChange('programId', e.target.value)}
+                        <div className="edit-modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Edit Batch</h3>
+                                    <button onClick={clearFormData} className="cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
                                         >
-                                            <option value={''}>Select Program</option>
-                                            {programs.map(program => {
-                                                return (
-                                                    <option key={program.id} value={program.id}>
-                                                        {program.programName}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="batchCode">
+                                                Batch Code<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="batchCode"
+                                                name="batchCode"
+                                                className="form-disabled"
+                                                placeholder='Batch Code'
+                                                value={editBatchData.batchCode}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div >
+                                            <label className="form-input" htmlFor="capacity">
+                                                Capacity<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="capacity"
+                                                name="capacity"
+                                                className="form-select"
+                                                placeholder='Capacity'
+                                                value={editBatchData.capacity}
+                                                onChange={e => handleEditInputChange('capacity', e.target.value)}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="w-full">
-                                    <div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="startDate">
+                                                Start Date<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="startDate"
+                                                name="startDate"
+                                                className="form-select"
+                                                value={editBatchData.startDate}
+                                                onChange={e => handleEditInputChange('startDate', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div >
+                                            <label className="form-input" htmlFor="endDate">
+                                                End Date<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="endDate"
+                                                name="endDate"
+                                                className="form-select"
+                                                value={editBatchData.endDate}
+                                                onChange={e => handleEditInputChange('endDate', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="programId">
+                                                Select Program<sup className="important">*</sup>
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                id="programId"
+                                                value={editBatchData.programId}
+                                                onChange={e => handleEditInputChange('programId', e.target.value)}
+                                            >
+                                                <option value={''}>Select Program</option>
+                                                {programs.map(program => {
+                                                    return (
+                                                        <option key={program.id} value={program.id}>
+                                                            {program.programName}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+                                        <div>
+                                            <label className="form-input" htmlFor="academicYearId">
+                                                Academic Year<sup className="important">*</sup>
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                id="academicYearId"
+                                                value={editBatchData.academicYearId}
+                                                onChange={e => handleEditInputChange('academicYearId', e.target.value)}
+                                            >
+                                                <option value="">---Select Academic Year---</option>
+                                                {academicYears.map(ay => {
+                                                    return (
+                                                        <option key={ay.id} value={ay.id}>
+                                                            {ay.name}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-2'>
+                                    <div className="w-full">
+                                        <div className="mr-4">
+                                            <label className="form-input" htmlFor="description">
+                                                Description<sup className="important">*</sup>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="description"
+                                                name="description"
+                                                className="form-select"
+                                                placeholder='Description'
+                                                onChange={e => handleEditInputChange('description', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-full">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={updateBatch}>Save</Button>
+                                <Button style="cancel" onClick={handleCancleEditModal}>Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            {/* -------------------------------------------------MODAL FOR CORE BATCH-------------------------------------------------------- */}
+            {openSection === 'core' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Add Core Batch</h3>
+                                    <button onClick={handleCanclePopUp} className="edit-cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
                                         <label className="form-input" htmlFor="academicYearId">
                                             Academic Year<sup className="important">*</sup>
                                         </label>
                                         <select
                                             className="form-select"
                                             id="academicYearId"
-                                            value={editBatchData.academicYearId}
-                                            onChange={e => handleEditInputChange('academicYearId', e.target.value)}
+                                            onChange={onMutate}
                                         >
                                             <option value="">---Select Academic Year---</option>
                                             {academicYears.map(ay => {
@@ -897,41 +728,239 @@ const BatchManagement = () => {
                                         </select>
                                     </div>
                                 </div>
-                            </div>
-                            <div className='card-content mt-2'>
-                                <div className="w-full">
-                                    <div className="mr-4">
-                                        <label className="form-input" htmlFor="description">
-                                            Description<sup className="important">*</sup>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="programId">
+                                            Select Program<sup className="important">*</sup>
+                                        </label>
+                                        <select
+                                            className="form-select"
+                                            id="programId"
+                                            onChange={onMutate}
+                                        >
+                                            <option value={''}>Select Program</option>
+                                            {programs.map(program => {
+                                                return (
+                                                    <option key={program.id} value={program.id}>
+                                                        {program.programName}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="batchCode">
+                                            Batch Code<sup className="important">*</sup>
                                         </label>
                                         <input
                                             type="text"
-                                            id="description"
-                                            name="description"
-                                            className="form-select"
-                                            placeholder='Description'
-                                            onChange={e => handleEditInputChange('description', e.target.value)}
+                                            id="batchCode"
+                                            name="batchCode"
+                                            className="form-disabled"
+                                            value={formData.coreBatchCode}
+                                            disabled
                                         />
                                     </div>
                                 </div>
-                                <div className="w-full">
-
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="startDate">
+                                            Start Date<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="startDate"
+                                            name="startDate"
+                                            value={startDate}
+                                            className="form-select"
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="endDate">
+                                            End Date<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="endDate"
+                                            name="endDate"
+                                            className="form-select"
+                                            value={endDate}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="capacity">
+                                            Capacity<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            min={1}
+                                            type="text"
+                                            id="capacity"
+                                            name="capacity"
+                                            className="form-select"
+                                            value={capacity}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="light-divider"></div>
-                        <div className='modal-button'>
-                            <Button style="small" onClick={updateBatch}>Save</Button>
-                            <Button style="cancel" onClick={handleCancelEdit}>Cancel</Button>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={() => onSubmit('core')}>Save</Button>
+                                <Button style="cancel" onClick={handleCanclePopUp} >Cancel</Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-                : ''}
+            }
+
+            {/* -------------------------------------------------MODAL FOR ELECTIVE BATCH--------------------------------------------------- */}
+            {openSection === 'elective' &&
+                <div className='modal-open'>
+                    <div className="modal-wrapper">
+                        <div className="modal-opacity">
+                            <div className="modal-op"></div>
+                        </div>
+                        <div className="modal-content">
+                            <div className="modal-title-content">
+                                <div className="modal-title-wrapper">
+                                    <h3 className="modal-title">Add Elective Batch</h3>
+                                    <button onClick={handleCanclePopUp} className="edit-cancel-button">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-section">
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="academicYearId">
+                                            Academic Year<sup className="important">*</sup>
+                                        </label>
+                                        <select
+                                            className="form-select"
+                                            id="academicYearId"
+                                            onChange={onMutate}
+                                        >
+                                            <option value="">---Select Academic Year---</option>
+                                            {academicYears.map(ay => {
+                                                return (
+                                                    <option key={ay.id} value={ay.id}>
+                                                        {ay.name}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="programId">
+                                            Select Program<sup className="important">*</sup>
+                                        </label>
+                                        <select
+                                            className="form-select"
+                                            id="programId"
+                                            onChange={onMutate}
+                                        >
+                                            <option value={''}>Select Program</option>
+                                            {programs.map(program => {
+                                                return (
+                                                    <option key={program.id} value={program.id}>
+                                                        {program.programName}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="batchCode">
+                                            Batch Code<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="batchCode"
+                                            name="batchCode"
+                                            className="form-disabled"
+                                            value={formData.electiveBatchCode}
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="startDate">
+                                            Start Date<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="startDate"
+                                            name="startDate"
+                                            className="form-select"
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="endDate">
+                                            End Date<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="endDate"
+                                            name="endDate"
+                                            className="form-select"
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='card-content mt-3'>
+                                    <div className="w-full">
+                                        <label className="form-input" htmlFor="capacity">
+                                            Capacity<sup className="important">*</sup>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="capacity"
+                                            name="capacity"
+                                            className="form-select"
+                                            value={capacity}
+                                            onChange={onMutate}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="light-divider"></div>
+                            <div className='modal-button'>
+                                <Button style="small" onClick={() => onSubmit('elective')}>Save</Button>
+                                <Button style="cancel" onClick={handleCanclePopUp} >Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
             <DeleteModal isOpen={isDeleteModalOpen} onCancel={handleCancelDelete} onConfirm={handleDelete} />
         </>
     )
 }
 
-export default BatchManagement;
-
+export default BatchManagement

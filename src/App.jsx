@@ -24,7 +24,7 @@ import AddFaculty from "./pages/FacultyManagement/AddFaculty";
 import FacultyExperience from "./pages/FacultyManagement/FacultyExperience";
 import UpdateStudent from "./pages/StudentManagement/UpdateStudent";
 import UpdateFaculty from "./pages/FacultyManagement/UpdateFaculty";
-import LeaveManagement from "./pages/LeaveManagement";
+import LeaveManagement from "./pages/LeaveManagement/LeaveManagement";
 import UpdateCampus from "./pages/CampusManagement/UpdateCampus";
 
 const router = createBrowserRouter([
@@ -111,7 +111,6 @@ const router = createBrowserRouter([
   {
     path: '/leave-management',
     element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN", "STAFF"]} ><LeaveManagement /></PrivateRoute>
-
   }
 ])
 
