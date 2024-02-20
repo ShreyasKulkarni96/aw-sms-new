@@ -86,7 +86,7 @@ const AccountManagement = () => {
         { Header: 'Batch Number', accessor: 'batch_code' },
         { Header: 'Invoice Number', accessor: 'invoice_number' },
         { Header: 'Invoice Amount', accessor: 'amount' },
-        { Header: 'Balance Amount', accessor: 'student_detail.balanceAmount' },
+        { Header: 'Balance Amount', accessor: '.balanceAmount' },
         {
             Header: 'Action', accessor: 'action',
             Cell: ({ row }) => (
@@ -97,6 +97,7 @@ const AccountManagement = () => {
         }
     ];
 
+    console.log(invoices)
     const invoiceSerialNo = useMemo(() => {
         return invoices.map((invoice, index) => {
             const formattedInvoiceDate = new Date(invoice.invoice_date).toISOString().replace('T', ' ').split('.')[0]; // Format enrollment date

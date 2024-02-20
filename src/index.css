@@ -480,3 +480,13 @@ body {
 .filter-name {
   @apply ml-2 text-base font-medium
 }
+
+/* --------------------------------------SCHEDULE MANAGEMENT STYLES-------------------------------- */
+
+.schedule-main-page {
+  @apply flex overflow-hidden
+}
+
+.Schedule-main-container {
+  @apply flex-1 flex-col
+}

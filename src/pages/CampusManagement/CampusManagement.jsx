@@ -249,7 +249,6 @@ const CampusManagement = () => {
                                 </div>
                             </div>
                             <div className="modal-section">
-
                                 <div className='overflow-auto' style={{ maxHeight: '350px' }}>
                                     <table id="campusSpaces" className="w-full border">
                                         <thead className='sticky border top-0 text-left p-2 text-base font-bold'>
