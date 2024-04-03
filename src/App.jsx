@@ -27,6 +27,7 @@ import UpdateFaculty from "./pages/FacultyManagement/UpdateFaculty";
 import LeaveManagement from "./pages/LeaveManagement/LeaveManagement";
 import UpdateCampus from "./pages/CampusManagement/UpdateCampus";
 
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <Dashboard />
+    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN", "STAFF", "FACULTY", "STUDENT"]} ><Dashboard /></PrivateRoute>
   },
   {
     path: '/student-management',
@@ -54,19 +55,19 @@ const router = createBrowserRouter([
   },
   {
     path: '/campus-management',
-    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN"]} ><CampusManagement /></PrivateRoute>
+    element: <PrivateRoute role={["SUPER_ADMIN"]} ><CampusManagement /></PrivateRoute>
   },
   {
     path: '/add-campus',
-    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN"]} ><AddCampus /></PrivateRoute>
+    element: <PrivateRoute role={["SUPER_ADMIN"]} ><AddCampus /></PrivateRoute>
   },
   {
     path: '/edit-campus/:campusId?',
-    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN"]} ><UpdateCampus /></PrivateRoute>
+    element: <PrivateRoute role={["SUPER_ADMIN"]} ><UpdateCampus /></PrivateRoute>
   },
   {
     path: '/program-management',
-    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN"]} ><ProgramManagement /></PrivateRoute>
+    element: <PrivateRoute role={["SUPER_ADMIN"]} ><ProgramManagement /></PrivateRoute>
   },
   {
     path: '/course-management',
@@ -110,7 +111,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/leave-management',
-    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN", "STAFF"]} ><LeaveManagement /></PrivateRoute>
+    element: <PrivateRoute role={["ADMIN", "SUPER_ADMIN", "STAFF", "STUDENT"]} ><LeaveManagement /></PrivateRoute>
   }
 ])
 

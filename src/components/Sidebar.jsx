@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
+import { jwtDecode } from "jwt-decode";
 import { Link } from 'react-router-dom';
 import Logo from '../assets/images/logo.png';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
-// import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-// import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import ThreePRoundedIcon from '@mui/icons-material/ThreePRounded';
@@ -18,6 +17,9 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 
 const Sidebar = () => {
+    const token = localStorage.getItem('token');
+    const decodedToken = jwtDecode(token);
+
     const [openSection, setOpenSection] = useState(null);
 
     const handleSectionToggle = (section) => {
@@ -59,30 +61,33 @@ const Sidebar = () => {
                             </Link>
 
                             {/*-------------------STUDENT MANAGEMENT------------------*/}
-                            <div>
-                                <li className='list-dropdown'>
-                                    <div onClick={() => handleSectionToggle('studentManagement')} className="list-items-dropdown">
-                                        <GroupRoundedIcon className='icons' style={{ fontSize: '26px' }} />
-                                        <span className='list-name ml-3'>Student Management</span>
-                                        {openSection === "studentManagement" ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
-                                    </div>
-                                </li>
-                                <ul className={`ml-8 ${openSection === "studentManagement" ? 'block' : 'hidden'}`}>
-                                    <Link to="/student-management">
-                                        <li className='sublist'>
-                                            <span className="list-name ml-5">Manage Student</span>
-                                        </li>
-                                    </Link>
-                                    <Link to="/manage-batch">
-                                        <li className='sublist'>
-                                            <span className="list-name ml-5">Manage Batch</span>
-                                        </li>
-                                    </Link>
-                                </ul>
-                            </div>
+                            {(decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN") && (
+                                <div>
+                                    <li className='list-dropdown'>
+                                        <div onClick={() => handleSectionToggle('studentManagement')} className="list-items-dropdown">
+                                            <GroupRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                            <span className='list-name ml-3'>Student Management</span>
+                                            {openSection === "studentManagement" ? <KeyboardArrowUpRoundedIcon className='icons' /> : <KeyboardArrowDownRoundedIcon className='icons' />}
+                                        </div>
+                                    </li>
+                                    <ul className={`ml-8 ${openSection === "studentManagement" ? 'block' : 'hidden'}`}>
+                                        <Link to="/student-management">
+                                            <li className='sublist'>
+                                                <span className="list-name ml-5">Manage Student</span>
+                                            </li>
+                                        </Link>
+                                        <Link to="/manage-batch">
+                                            <li className='sublist'>
+                                                <span className="list-name ml-5">Manage Batch</span>
+                                            </li>
+                                        </Link>
+                                    </ul>
+                                </div>
+                            )}
+
 
                             {/*-------------------------CAMPUS MANAGEMENT------------------------------*/}
-                            <div>
+                            {decodedToken.role === "SUPER_ADMIN" && <div>
                                 <li className='list-dropdown'>
                                     <div className="list-items-dropdown" onClick={() => handleSectionToggle('campusManagement')} >
                                         <ApartmentRoundedIcon className='icons' style={{ fontSize: '26px' }} />
@@ -97,10 +102,10 @@ const Sidebar = () => {
                                         </li>
                                     </Link>
                                 </ul>
-                            </div>
+                            </div>}
 
                             {/* -----------------------PROGRAM MANAGEMENT---------------------------------------- */}
-                            <div>
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken.role === "STAFF" && <div>
                                 <li className='list-dropdown'>
                                     <div className="list-items-dropdown" onClick={() => handleSectionToggle('programManagement')} >
                                         <InventoryRoundedIcon className='icons' style={{ fontSize: '26px' }} />
@@ -130,37 +135,39 @@ const Sidebar = () => {
                                         </li>
                                     </Link>
                                 </ul>
-                            </div>
+                            </div>}
+
 
                             {/* ----------------------FACULTY MANAGEMENT----------------------------------------- */}
-                            <Link to="/faculty-management">
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken.role === "STAFF" && <Link to="/faculty-management">
                                 <li className='list'>
                                     <div className="list-items">
                                         <BadgeRoundedIcon className='icons' style={{ fontSize: '26px' }} />
                                         <span className='list-name ml-4'>Faculty Management</span>
                                     </div>
                                 </li>
-                            </Link>
+                            </Link>}
+
 
                             {/* ----------------------SCHEDULE MANAGEMENT------------------------------------------ */}
-                            <Link to='/schedule-management'>
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken.role === "STAFF" && <Link to='/schedule-management'>
                                 <li className='list'>
                                     <div className="list-items">
                                         <EditCalendarRoundedIcon className='icons' style={{ fontSize: '26px' }} />
                                         <span className='list-name ml-4'>Schedule Management</span>
                                     </div>
                                 </li>
-                            </Link>
+                            </Link>}
 
                             {/* -----------------------ACCOUNT MANAGEMENT------------------------- */}
-                            <Link to='/account-management'>
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken === "STAFF" && <Link to='/account-management'>
                                 <li className='list'>
                                     <div className="list-items">
                                         <AccountBalanceRoundedIcon className='icons' style={{ fontSize: '26px' }} />
                                         <span className='list-name ml-4'>Account Management</span>
                                     </div>
                                 </li>
-                            </Link>
+                            </Link>}
 
                             {/* ---------------------------------LEAVE MANAGEMENT----------------------------- */}
                             <Link to='/leave-management'>
@@ -173,14 +180,26 @@ const Sidebar = () => {
                             </Link>
 
                             {/* -----------------------ACADEMIC YEAR MANAGEMENT--------------------------*/}
-                            <Link to='/academicyear-management'>
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken.role === "STAFF" && <Link to='/academicyear-management'>
                                 <li className='list'>
                                     <div className="list-items">
                                         <CalendarMonthRoundedIcon className='icons' style={{ fontSize: '26px' }} />
                                         <span className='list-name ml-4'>Academic Year Management</span>
                                     </div>
                                 </li>
-                            </Link>
+                            </Link>}
+
+                            {/* ---------------------------REPORTS------------------------------------------- */}
+
+                            {decodedToken.role === "ADMIN" || decodedToken.role === "SUPER_ADMIN" || decodedToken.role === "STAFF" && <Link to='/reports'>
+                                <li className='list'>
+                                    <div className="list-items">
+                                        <CalendarMonthRoundedIcon className='icons' style={{ fontSize: '26px' }} />
+                                        <span className='list-name ml-4'>Reports</span>
+                                    </div>
+                                </li>
+                            </Link>}
+
 
                             {/* --------------------------LOGOUT---------------------*/}
                             <li className='list'>
