@@ -28,18 +28,15 @@ function Login() {
             const response = await APIService.post(LOGIN_API, { emailOrPhone, password });
             const { data } = response;
 
-            // Handle success response
             if (data.status === 'success') {
                 const token = data.data.token
                 toast.success(data.message);
                 localStorage.setItem('token', token);
                 navigate('/dashboard');
             } else {
-                // Handle unsuccessful login
                 toast.error(data.message || 'Login failed');
             }
         } catch (error) {
-            // Handle error
             console.error('Login error:', error);
             toast.error('An error occurred during login. Please try again.');
         }
