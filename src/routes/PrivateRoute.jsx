@@ -1,9 +1,9 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from "react-router-dom";
 import { jwtDecode } from "jwt-decode"; // Import jwtDecode function from jwt-decode library
 
 const PrivateRoute = ({ role, children }) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     if (!token) {
       return <Navigate to="/login" />;
@@ -24,7 +24,7 @@ const PrivateRoute = ({ role, children }) => {
       return <Navigate to="/" />;
     }
   } catch (error) {
-    console.error('PrivateRoute error:', error);
+    console.error("PrivateRoute error:", error);
     return <Navigate to="/dashboard" />;
   }
 };
