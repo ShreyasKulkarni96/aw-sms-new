@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  box-sizing: border-box;
+  background-color: #F9FAFB;
+  width: 100%;
+  height: 100vh;
+}
+
+.background-image {
+  background-image: url("./assets/loginbg.jpeg");
+}
+
+.custom-shadow {
+  box-shadow: 0rem 0.25rem 1.25rem 0rem rgba(0, 0, 0, 0.14),
+    0rem 0.4375rem 0.625rem -0.3125rem;
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar for WebKit browsers */
+  }
+
+  /* Optional: Hide scrollbar for Firefox */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    /* Firefox */
+  }
+}
+
+/* --------------------------------------------LOGIN PAGE STYLES-------------------------------------- */
+
+.login-page-wrapper {
+  @apply h-full bg-fixed bg-cover bg-no-repeat
+}
+
+.overlay {
+  @apply w-full bg-opacity-50 bg-black flex flex-col items-center justify-between min-h-screen
+}
+
+.flex-container {
+  @apply container mx-auto flex items-center justify-center flex-col w-full
+}
+
+.page-title {
+  @apply my-[25px] px-5 py-[17px] bg-white p-8 rounded-[10px] shadow-xl w-10/12
+}
+
+.page-title h6 {
+  @apply text-blue text-xl tracking-wider font-bold uppercase
+}
+
+.login-wrapper {
+  @apply relative flex flex-col items-center w-[300px] bg-black mx-auto my-0 px-5 py-2.5 rounded-[10px] top-5
+}
+
+.signin-wrapper {
+  @apply absolute w-64 text-white top-[-25px] mx-auto p-[17px] rounded-[10px] bg-orangePrimary custom-shadow
+}
+
+.signin-wrapper h6 {
+  @apply text-2xl font-extrabold leading-snug mb-0 text-center
+}
+
+.logo-wrapper {
+  @apply flex items-center justify-center w-[80%] mt-12 mx-auto my-0 top-[50px]
+}
+
+.login-form-wrapper {
+  @apply w-full float-left mt-4 mb-0 mx-0
+}
+
+.field-wrapper {
+  @apply float-left w-full mx-0 my-1.5
+}
+
+.login-form-outline {
+  @apply mb-3
+}
+
+.login-form-label {
+  @apply block text-white
+}
+
+.login-form-input {
+  @apply w-full mt-2 h-[34px] px-3 text-[13px] rounded-md border border-gray-500 focus:outline-none focus:border-orange-900
+}
+
+.toggle-label {
+  @apply relative inline-flex items-center cursor-pointer mt-2
+}
+
+.toggle-text {
+  @apply ms-3 text-sm text-white
+}
+
+.button-container {
+  @apply text-center
+}
+
+.forgot-wrap {
+  @apply w-full text-center underline mt-[15px] mb-2.5 mx-0 text-base font-bold text-white cursor-pointer
+}
+
+.footer-text {
+  @apply text-center z-10 text-white mb-10
+}
