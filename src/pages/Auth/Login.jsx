@@ -45,7 +45,7 @@ function Login() {
             }
         } catch (error) {
             console.error("Login error:", error);
-            toast.error("An error occurred during login. Please try again.");
+            toast.error(error.response.data.message);
         }
 
     }
@@ -97,7 +97,7 @@ function Login() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="field-wrapper">
+                                    {/* <div className="field-wrapper">
                                         <div className="mb-3">
                                             <label className="toggle-label">
                                                 <input type="checkbox" className="sr-only peer" />
@@ -105,14 +105,16 @@ function Login() {
                                                 <span className="toggle-text">Remember me</span>
                                             </label>
                                         </div>
-                                    </div>
-                                    <div className="button-container">
-                                        <Button style="primary" type="submit">
-                                            Sign In
-                                        </Button>
+                                    </div> */}
+                                    <div className="mt-2">
+                                        <div className="button-container">
+                                            <Button style="primary" type="submit">
+                                                Sign In
+                                            </Button>
+                                        </div>
                                     </div>
                                     <div className="forgot-wrap">
-                                        <Link to="/forgot-password">Forgot Password?</Link>
+                                        <Link to="/reset-password">Forgot Password?</Link>
                                     </div>
                                 </form>
                             </div>

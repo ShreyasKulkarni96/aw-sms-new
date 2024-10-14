@@ -113,3 +113,216 @@ body {
 .footer-text {
   @apply text-center z-10 text-white mb-10
 }
+
+/* ---------------------------------------------ICON STYLES------------------------------------------- */
+
+.icon-style {
+  @apply text-gray-400 hover:text-grayHover cursor-pointer
+}
+
+.import-file-button {
+  @apply mr-1 px-5 py-2 inline-block text-sm font-semibold tracking-wide bg-orangePrimary rounded-3xl duration-300 hover:bg-orangeSecondary shadow-md text-white
+}
+
+/* --------------------------------------------SIDEBAR STYLE--------------------------------------------- */
+
+.sidebar {
+  @apply min-h-screen w-[300px] bg-grayPrimary duration-[0.5s] ease-[ease] px-6 py-1.5 left-0 top-0 overflow-y-scroll scrollbar-hide
+}
+
+.sidebar-logo {
+  @apply p-2 flex items-center h-16 w-48
+}
+
+.divider {
+  @apply bg-gray-700 h-[1px] mt-2
+}
+
+.icons {
+  @apply text-white
+}
+
+.sidebar-menu {
+  @apply mt-4
+}
+
+.list-search {
+  @apply duration-300 ease-linear cursor-pointer hover:bg-grayHover rounded-3xl flex items-center justify-center p-2 shadow-lg bg-gray-600
+}
+
+.search-input {
+  @apply text-base ml-4 w-full bg-transparent focus:outline-none text-white
+}
+
+.list {
+  @apply mt-1 duration-300 ease-linear cursor-pointer hover:bg-grayHover rounded-3xl flex items-center justify-center p-2 hover:rounded-xl
+}
+
+.list-items {
+  @apply flex w-full items-center
+}
+
+.list-name {
+  @apply text-[16px] font-semibold text-white tracking-wide
+}
+
+.list-dropdown {
+  @apply mt-1 duration-300 ease-linear cursor-pointer hover:bg-grayHover rounded-3xl flex flex-col items-start justify-center p-2 hover:rounded-xl
+}
+
+.list-items-dropdown {
+  @apply flex w-full items-center justify-between
+}
+
+.sublist {
+  @apply mt-1 cursor-pointer hover:bg-grayHover p-2 rounded-3xl hover:rounded-xl duration-300
+}
+
+/* ---------------------------------------------TOPHEADER STYLES------------------------------------------- */
+
+.topheader-wrapper {
+  @apply p-4 shadow-lg flex justify-between items-center w-full
+}
+
+.topheader-breadcrum {
+  @apply inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse
+}
+
+.topheader-searchbar {
+  @apply w-1/3 cursor-pointer border rounded-3xl flex items-center p-2 shadow-sm
+}
+
+.topheader-searchbar-input {
+  @apply text-sm ml-4 w-full bg-transparent focus:outline-none
+}
+
+/* ----------------------------------------------COMMON PAGE STYLES------------------------------------------ */
+
+.main-page {
+  @apply flex h-screen
+}
+
+.main-page-content {
+  @apply flex-1 flex-col h-screen
+}
+
+.main {
+  @apply h-full
+}
+
+.main-grid {
+  @apply grid
+}
+
+.page-content {
+  @apply h-full m-2 p-6
+}
+
+.top-card {
+  @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white
+}
+
+.card-content {
+  @apply flex justify-between
+}
+
+.card-header {
+  @apply text-xl font-bold text-gray-600 mb-2
+}
+
+.card-title {
+  @apply text-3xl font-bold text-gray-600 mb-2
+}
+
+.bottom-card {
+  @apply w-full border shadow-md p-4 border-gray-100 rounded-xl bg-white mt-6
+}
+
+.accordion-card-open {
+  @apply w-full border-2 bg-gray-200 rounded-md p-2
+}
+
+.accordion-card-close {
+  @apply w-full border-2 rounded-md p-2
+}
+
+.accordion-details {
+  @apply w-full flex justify-between cursor-pointer
+}
+
+.accordion-title {
+  @apply text-lg ml-4 text-grayPrimary font-semibold
+}
+
+.accordion-content {
+  @apply p-4 border-2 rounded-md bg-white
+}
+
+.important {
+  @apply text-red-600
+}
+
+.gender-select {
+  @apply mt-10 flex justify-around
+}
+
+.same-address {
+  @apply text-xs mt-1 text-red-600
+}
+
+.save-and-cancle {
+  @apply absolute bottom-2 right-4 mb-5 mr-4
+}
+
+/* -----------------------TABLE CSS------------------------ */
+.table {
+  @apply min-w-full border
+}
+
+.table-head {
+  @apply sticky border top-0 text-left bg-orange-600 p-2 text-base font-semibold
+}
+
+.th {
+  @apply border text-left bg-orange-600 p-2 text-base font-semibold
+}
+
+.td {
+  @apply border p-2 text-base
+}
+
+/* -------------------PAGINATION WRAPPER------------------- */
+
+.pagination-wrapper {
+  @apply flex mt-4
+}
+
+.pagination-button {
+  @apply mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg
+}
+
+.span-pagination {
+  @apply m-3 font-bold
+}
+
+/* ----------------INPUT, SELECT------------------ */
+
+.form-input {
+  @apply block text-base font-medium
+}
+
+.day-select {
+  @apply w-[200px] text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400
+}
+
+.form-select {
+  @apply w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400
+}
+
+.form-date-select {
+  @apply w-full text-sm p-2 mt-1 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:border-gray-400
+}
+
+.form-disabled {
+  @apply form-select bg-gray-200
+}

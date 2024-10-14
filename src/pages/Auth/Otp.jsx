@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Logo from "../../assets/logo.png";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,21 @@ import { toast } from 'react-toastify';
 function Otp() {
     const navigate = useNavigate();
     const [otp, setOtp] = useState("");
+    const [timer, setTimer] = useState(60);
+    const [isResendDisabled, setIsResendDisabled] = useState(true);
+    const userId = localStorage.getItem("userId");
+
+    useEffect(() => {
+        let interval;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        } else {
+            setIsResendDisabled(false);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
 
     const onInputChange = (e) => {
         setOtp(e.target.value);
@@ -21,8 +36,6 @@ function Otp() {
             toast.warn("Please enter the OTP");
             return;
         }
-
-        const userId = localStorage.getItem("userId");
 
         if (!userId) {
             toast.error("User ID not found. Please login again.");
@@ -51,17 +64,32 @@ function Otp() {
         }
     }
 
-    const resendOtp = async () => {
-        const userId = localStorage.getItem("userId");
+    const resendOtp = async (e) => {
+        e.preventDefault();
+
+        if (!userId) {
+            toast.error("User ID not found. Please login again.");
+            navigate("/");
+            return;
+        }
 
         try {
-            await APIService.post(RESEND_OTP_API, { userId });
-            toast.success("OTP resent successfully.");
+            const response = await APIService.post(RESEND_OTP_API, { userId });
+            const { data } = response;
+
+            if (data.status === "success") {
+                toast.success("OTP Resent Successfully!");
+                setTimer(60);
+                setIsResendDisabled(true);
+            } else {
+                toast.error("Error resending OTP. Please try again.");
+            }
         } catch (error) {
             console.error("Resend OTP error:", error);
             toast.error("Error resending OTP. Please try again.");
         }
-    };
+
+    }
 
     return (
         <div className="background-image login-page-wrapper">
@@ -93,16 +121,22 @@ function Otp() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="button-container">
+                                    <div className=" font-bold text-base mb-2">
+                                        {isResendDisabled && (
+                                            <p className="text-white">Resend OTP in {timer} seconds</p>
+                                        )}
+                                    </div>
+                                    <div className="button-container mb-4">
                                         <Button style="primary" type="submit">
                                             Verify OTP
                                         </Button>
                                     </div>
-                                    <div className="forgot-wrap">
-                                        <Button style="primary" onClick={resendOtp}>
-                                            Resend OTP
-                                        </Button>
-                                    </div>
+                                    {isResendDisabled ? "" :
+                                        <div className="forgot-wrap">
+                                            <Button style="primary" onClick={resendOtp} disabled={isResendDisabled}>
+                                                Resend OTP
+                                            </Button>
+                                        </div>}
                                 </form>
                             </div>
                         </div>
