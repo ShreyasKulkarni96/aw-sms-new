@@ -20,12 +20,12 @@ const Dashboard = () => {
         phone1: "",
         localAddress: "",
         permanentAddress: "",
-        roleId: ''
+        userRole: ''
     };
 
     const [formData, setFormData] = useState(initialData);
 
-    let { name, DOB, gender, email, phone1, localAddress, permanentAddress, roleId } = formData;
+    let { name, DOB, gender, email, phone1, localAddress, permanentAddress, userRole } = formData;
 
     const filteredRoles = decodedToken.role === "ADMIN"
         ? Roles.filter(role => role.userRole !== "ADMIN")
@@ -44,12 +44,11 @@ const Dashboard = () => {
         e.preventDefault();
 
         try {
-            const response = await APIService.post(REGISTER_USER, {
+            const response = await APIService.post(REGISTER_USER, formData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'userrole': `${decodedToken.role}`
-                },
-                body: JSON.stringify(formData),
+                }
             });
 
             const { data } = response;
@@ -85,12 +84,12 @@ const Dashboard = () => {
                             <form className='mt-4 ml-4 flex flex-col' onSubmit={handleSubmit}>
                                 <div>
                                     <label className="block text-lg font-bold" htmlFor="roleId"> User Role:</label>
-                                    <select className='form-select' id="roleId" name="roleId" value={roleId} onChange={handleInputChange}>
+                                    <select className='form-select' id="userRole" name="userRole" value={userRole} onChange={handleInputChange}>
                                         <option value="">
                                             Select Role
                                         </option>
                                         {filteredRoles.map((role) => (
-                                            <option key={role.userId} value={role.userId}>
+                                            <option key={role.userId} value={role.userRole}>
                                                 {role.userRole}
                                             </option>
                                         ))}
