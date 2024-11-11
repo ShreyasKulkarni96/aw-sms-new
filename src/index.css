@@ -36,6 +36,134 @@ body {
   }
 }
 
+/* ---------------------------------------------ICON STYLES------------------------------------------- */
+
+.icon-style {
+  @apply text-gray-400 hover:text-grayHover cursor-pointer
+}
+
+.import-file-button {
+  @apply mr-1 px-5 py-2 inline-block text-sm font-semibold tracking-wide bg-orangePrimary rounded-3xl duration-300 hover:bg-orangeSecondary shadow-md text-white
+}
+
+/* ----------------------------------------MODAL----------------------------------- */
+
+.modal-open {
+  @apply fixed inset-0 overflow-auto
+}
+
+.modal-wrapper {
+  @apply flex items-end justify-center min-h-screen pt-4 px-20 pb-20 text-center sm:block sm:p-0 rounded-lg
+}
+
+.modal-opacity {
+  @apply fixed inset-0 transition-opacity
+}
+
+.modal-op {
+  @apply absolute inset-0 bg-gray-500 opacity-75
+}
+
+.modal-content {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full
+}
+
+.modal-title-content {
+  @apply bg-orange-200 px-4 pt-5 pb-4 sm:p-5 sm:pb-3
+}
+
+.modal-title-wrapper {
+  @apply flex justify-between items-center
+}
+
+.modal-title {
+  @apply text-xl font-semibold text-gray-900
+}
+
+.modal-section {
+  @apply bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4
+}
+
+.cancel-button {
+  @apply text-gray-700 hover:text-gray-900
+}
+
+
+/* -------------------------------------------EDIT MODAL STYLE------------------------- */
+
+.edit-modal-content {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full
+}
+
+.show-details-model {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full
+}
+
+.light-divider {
+  @apply my-3 mx-2 bg-gray-200 h-[1px]
+}
+
+.modal-button {
+  @apply mt-2 text-right mb-4 mr-4
+}
+
+/* ------------------------------------------DELETE MODAL STYLE-------------------------------------- */
+
+.delete-modal-wrapper {
+  @apply flex items-end justify-center min-h-screen pt-4 px-20 pb-20 text-center sm:block sm:p-0 rounded-lg
+}
+
+.delete-modal-background {
+  @apply fixed inset-0 transition-opacity
+}
+
+.delete-modal-opacity {
+  @apply absolute inset-0 bg-gray-500 opacity-75
+}
+
+.delete-modal-body {
+  @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full
+}
+
+.delete-modal-container {
+  @apply bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4
+}
+
+.delete-modal-content-div {
+  @apply sm:flex sm:items-start
+}
+
+.delete-modal-content {
+  @apply mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left
+}
+
+.delete-modal-confirm {
+  @apply text-lg font-semibold leading-6 text-gray-900
+}
+
+.delete-modal-message {
+  @apply text-lg leading-5 text-gray-500
+}
+
+/* ------This can be used for other modals------- */
+
+.modal-button-container {
+  @apply bg-gray-100 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse
+}
+
+.modal-button-span {
+  @apply flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto
+}
+
+.delete-modal-button {
+  @apply inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-orangePrimary text-base leading-6 font-medium text-white shadow-sm hover:bg-orangeSecondary focus:outline-none focus:border-orangePrimary transition ease-in-out duration-150 sm:text-sm sm:leading-5
+}
+
+.modal-cancle-button {
+  @apply inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-gray-300 transition ease-in-out duration-150 sm:text-sm sm:leading-5
+}
+
+
 /* --------------------------------------------LOGIN PAGE STYLES-------------------------------------- */
 
 .login-page-wrapper {
@@ -91,7 +219,7 @@ body {
 }
 
 .login-form-input {
-  @apply w-full mt-2 h-[34px] px-3 text-[13px] rounded-md border border-gray-500 focus:outline-none focus:border-orange-900
+  @apply w-full mt-2 h-[34px] px-3 text-[13px] rounded-md border border-gray-500 focus:outline-none focus:border-orangePrimary
 }
 
 .toggle-label {
@@ -112,16 +240,6 @@ body {
 
 .footer-text {
   @apply text-center z-10 text-white mb-10
-}
-
-/* ---------------------------------------------ICON STYLES------------------------------------------- */
-
-.icon-style {
-  @apply text-gray-400 hover:text-grayHover cursor-pointer
-}
-
-.import-file-button {
-  @apply mr-1 px-5 py-2 inline-block text-sm font-semibold tracking-wide bg-orangePrimary rounded-3xl duration-300 hover:bg-orangeSecondary shadow-md text-white
 }
 
 /* --------------------------------------------SIDEBAR STYLE--------------------------------------------- */
@@ -194,6 +312,32 @@ body {
 
 .topheader-searchbar-input {
   @apply text-sm ml-4 w-full bg-transparent focus:outline-none
+}
+
+/* ------------------------------------------ACADEMIC YEAR WRAPPER------------------------------------- */
+
+.main-div {
+  @apply overflow-x-hidden m-10 overflow-y-hidden
+}
+
+.ay-main-content {
+  @apply h-full w-1/2 mx-auto flex-col
+}
+
+.ay-addyear-div {
+  @apply flex mb-2 justify-between
+}
+
+.ay-header {
+  @apply border-solid border border-gray-300 p-2 text-center text-lg font-semibold text-white bg-orangePrimary mb-0 w-full rounded-xl
+}
+
+.ay-lists {
+  @apply border border-solid border-gray-300 bg-white text-center text-lg font-medium text-gray-500 text-xl w-full p-1 rounded-lg hover:bg-gray-200
+}
+
+.ay-lists-icon {
+  @apply float-right mr-2 cursor-pointer
 }
 
 /* ----------------------------------------------COMMON PAGE STYLES------------------------------------------ */
@@ -280,11 +424,11 @@ body {
 }
 
 .table-head {
-  @apply sticky border top-0 text-left bg-orange-600 p-2 text-base font-semibold
+  @apply sticky border top-0 text-left bg-orange-400 p-2 text-base font-semibold
 }
 
 .th {
-  @apply border text-left bg-orange-600 p-2 text-base font-semibold
+  @apply border text-left bg-orange-400 p-2 text-base font-semibold
 }
 
 .td {
@@ -298,7 +442,7 @@ body {
 }
 
 .pagination-button {
-  @apply mr-2 px-4 py-2 bg-orange-600 hover:bg-orange-300 rounded-xl shadow-lg
+  @apply mr-2 px-4 py-2 bg-orange-500 hover:bg-orange-300 rounded-xl shadow-lg
 }
 
 .span-pagination {
@@ -325,4 +469,24 @@ body {
 
 .form-disabled {
   @apply form-select bg-gray-200
+}
+
+/* ----------------------------------PROGRAMS STYLES---------------------------------- */
+
+.filter-label {
+  @apply inline-flex items-center mr-6
+}
+
+.filter-name {
+  @apply ml-2 text-base font-medium
+}
+
+/* --------------------------------------SCHEDULE MANAGEMENT STYLES-------------------------------- */
+
+.schedule-main-page {
+  @apply flex overflow-hidden
+}
+
+.Schedule-main-container {
+  @apply flex-1 flex-col
 }

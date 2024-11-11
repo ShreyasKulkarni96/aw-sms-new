@@ -39,7 +39,7 @@ function Login() {
                 localStorage.setItem("token", token);
                 localStorage.setItem("userId", userId);
 
-                navigate("/otp");
+                navigate("/dashboard");
             } else {
                 toast.error(data.message || "Login failed");
             }
