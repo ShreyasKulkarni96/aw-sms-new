@@ -39,6 +39,12 @@ const AccountManagement = () => {
         setIsFormValid(isFormValid);
     }, [formData]);
 
+    useEffect(() => {
+        handleGetInvoice();
+        fetchBatchData();
+        clearFormData();
+    }, []);
+
     const handleRequestError = (error) => {
         toast.error(error.response?.data?.message || 'An error occurred during the request.');
     };
@@ -252,78 +258,6 @@ const AccountManagement = () => {
 
         doc.save('myPDF.pdf');
     };
-
-
-
-    const data = [
-        {
-            serialNo: 1,
-            invoice_date: '2024-11-01',
-            student_detail: {
-                user: {
-                    name: 'John Doe'
-                }
-            },
-            batch_code: 'B001',
-            invoice_number: 'INV001',
-            amount: 1000,
-            balanceAmount: 500
-        },
-        {
-            serialNo: 2,
-            invoice_date: '2024-11-02',
-            student_detail: {
-                user: {
-                    name: 'Jane Smith'
-                }
-            },
-            batch_code: 'B002',
-            invoice_number: 'INV002',
-            amount: 1200,
-            balanceAmount: 600
-        },
-        {
-            serialNo: 3,
-            invoice_date: '2024-11-03',
-            student_detail: {
-                user: {
-                    name: 'Emily Johnson'
-                }
-            },
-            batch_code: 'B003',
-            invoice_number: 'INV003',
-            amount: 1500,
-            balanceAmount: 700
-        },
-        {
-            serialNo: 4,
-            invoice_date: '2024-11-04',
-            student_detail: {
-                user: {
-                    name: 'Michael Brown'
-                }
-            },
-            batch_code: 'B004',
-            invoice_number: 'INV004',
-            amount: 1300,
-            balanceAmount: 300
-        },
-        {
-            serialNo: 5,
-            invoice_date: '2024-11-05',
-            student_detail: {
-                user: {
-                    name: 'Sarah Wilson'
-                }
-            },
-            batch_code: 'B005',
-            invoice_number: 'INV005',
-            amount: 1100,
-            balanceAmount: 200
-        }
-    ];
-
-
 
     return (
         <>

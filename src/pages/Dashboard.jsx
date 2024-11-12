@@ -27,9 +27,26 @@ const Dashboard = () => {
     const [isCampusPresent, setIsCampusPresent] = useState(false);
 
     useEffect(() => {
-        checkCampus();
-    }, [])
+        const checkCampus = async () => {
+            try {
+                const { data } = await APIService.get(CAMPUS_API);
 
+                if (data.data.campuses && data.data.campuses.length > 0) {
+                    setIsCampusPresent(true);
+                } else {
+                    setIsCampusPresent(false);
+                }
+            } catch (error) {
+                setIsCampusPresent(false);
+                console.error(error);
+                toast.error('Some error occurred while fetching campus data');
+            }
+        };
+
+        checkCampus();
+    }, []);
+
+    console.log(isCampusPresent)
     let { name, DOB, gender, email, phone1, localAddress, permanentAddress, userRole } = formData;
 
     const filteredRoles = decodedToken.role === "ADMIN"
@@ -70,23 +87,6 @@ const Dashboard = () => {
             toast.error('Something Went Wrong');
         }
     };
-
-    const checkCampus = async () => {
-        try {
-            const { data } = await APIService.get(CAMPUS_API);
-
-            if (data.campusesCount > 0) {
-                setIsCampusPresent(true);
-            } else {
-                setIsCampusPresent(false);
-            }
-        } catch (error) {
-            setIsCampusPresent(false);
-            console.error(error);
-            toast.error('Some error occurred while fetching campus data');
-        }
-    };
-
 
     return (
         <div className="flex h-screen">

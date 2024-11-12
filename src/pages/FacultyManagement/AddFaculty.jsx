@@ -12,14 +12,6 @@ import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRound
 import { FACULTY } from '../../constants/api';
 
 const AddFaculty = () => {
-    const navigate = useNavigate();
-    const facultyTypes = ['EMPLOYEE', 'PROFESSIONAL', 'AMATEUR'];
-    const FacultyAvailability = ['Regular Sessions', 'Rare Sessions', 'General'];
-    const paymentPlans = ['MONTHLY', 'SESSION-WISE'];
-    const [sameAddress, setSameAddress] = useState(false);
-    const [openSection, setOpenSection] = useState(null);
-    const [formData, setFormData] = useState(initialData);
-
     const initialData = {
         name: '',
         DOB: '',
@@ -48,6 +40,15 @@ const AddFaculty = () => {
         endDate: '',
         confirmAccountNumber: ''
     };
+    const navigate = useNavigate();
+    const facultyTypes = ['EMPLOYEE', 'PROFESSIONAL', 'AMATEUR'];
+    const FacultyAvailability = ['Regular Sessions', 'Rare Sessions', 'General'];
+    const paymentPlans = ['MONTHLY', 'SESSION-WISE'];
+    const [sameAddress, setSameAddress] = useState(false);
+    const [openSection, setOpenSection] = useState(null);
+    const [formData, setFormData] = useState(initialData);
+
+
 
     const {
         name,

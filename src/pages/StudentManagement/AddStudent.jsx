@@ -378,7 +378,6 @@ const AddStudent = () => {
             totalFees: totalFees * 1,
             paidFees: paidFees * 1,
             discount: discount ? discount : 0,
-            totalPayable: totalPayable * 1,
             pdcDetails,
             balanceAmount: balanceAmountValue
         };

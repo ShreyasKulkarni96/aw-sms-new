@@ -315,7 +315,7 @@ const ProgramManagement = () => {
                                     </div>
                                 </div>
                                 {/* -----------------------------BOTTOM CARD---------------------------------- */}
-                                <TableComponent columns={columns} data={programs} tableName="Program Lists" isButton={false} height="630px" />
+                                <TableComponent columns={columns} data={programs} tableName="Program Lists" isButton={false} height="680px" />
                             </div>
                         </div>
                     </main>
