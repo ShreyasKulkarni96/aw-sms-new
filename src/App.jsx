@@ -27,6 +27,7 @@ import FacultyManagement from "./pages/FacultyManagement/FacultyManagement";
 import LeaveManagement from './pages/LeaveManagement';
 import AccountManagement from './pages/AccountManagement';
 import ScheduleManagement from './pages/ScheduleManagement';
+import AddLeaves from './pages/AddLeaves';
 
 const router = createBrowserRouter([
   {
@@ -194,6 +195,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute role={["ADMIN", "SUPER_ADMIN", "STAFF", "STUDENT"]}>
         <LeaveManagement />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: "/add-leave",
+    element: (
+      <PrivateRoute role={["SUPER_ADMIN", "STUDENT"]}>
+        <AddLeaves />
       </PrivateRoute>
     )
   },
